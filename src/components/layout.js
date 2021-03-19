@@ -1,21 +1,10 @@
-/**
- * Layout component that queries for data
- * with Gatsby's StaticQuery component
- *
- * See: https://www.gatsbyjs.org/docs/static-query/
- */
+import React from 'react';
+import { useStaticQuery, graphql } from 'gatsby';
 
-import React from "react"
-import { StaticQuery, graphql } from "gatsby"
+import Header from './header';
 
-import { Container, Row, Col } from "react-bootstrap"
-
-import Header from "./header"
-import Navbar from "./navBar"
-
-const Layout = ({ children, pageInfo }) => (
-  <StaticQuery
-    query={graphql`
+const Layout = ({ children, pageInfo }) => {
+    const data = useStaticQuery(graphql`
       query SiteTitleQuery {
         site {
           siteMetadata {
@@ -23,41 +12,19 @@ const Layout = ({ children, pageInfo }) => (
           }
         }
       }
-    `}
-    render={data => (
+    `);
+
+    return (
       <>
         <Header siteTitle={data.site.siteMetadata.title} />
-        <Container fluid className="px-0 main">
-          <Row noGutters className="justify-content-center">
-            <Col>
-
-            </Col>
-          </Row>
-          <Navbar pageInfo={pageInfo} />
-          <Row noGutters>
-            <Col>
-              <Container className="mt-5">
-                <main>{children}</main>
-              </Container>
-            </Col>
-          </Row>
-        </Container>
-        <Container fluid className="px-0">
-          <Row noGutters>
-            <Col className="footer-col">
-              <footer>
-                <span>
-                  © {new Date().getFullYear()}, Built with
-                  {` `}
-                  <a href="https://www.gatsbyjs.org">Gatsby</a>
-                </span>
-              </footer>
-            </Col>
-          </Row>
-        </Container>
+        <main>{children}</main>
+        <footer>
+          <div class='footer-bottom text-center py-5'>
+            <span>© Copyright {new Date().getFullYear()} Caf.js Labs LLC</span>
+          </div>
+        </footer>
       </>
-    )}
-  />
-)
+    );
+};
 
-export default Layout
+export default Layout;
