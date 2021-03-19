@@ -1,7 +1,7 @@
-import { Link} from "gatsby";
-import PropTypes from "prop-types";
-import React from "react";
-import { Container, Row, Col } from "react-bootstrap";
+import { Link} from 'gatsby';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { Container } from 'react-bootstrap';
 import Logo from '../svgs/logosquare.svg';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {

@@ -71,6 +71,18 @@ a.theme-link {
     }
 }
 
+.fake-link {
+	color: $theme-color-primary;
+    -webkit-text-decoration-color: rgba($theme-text-color-primary,0.3);
+    text-decoration-color: rgba($theme-text-color-primary,0.3);
+    &:hover {
+	color: $theme-color-primary;
+        text-decoration: underline;
+	-webkit-text-decoration-color: rgba($theme-color-primary,0.8);
+	text-decoration-color: rgba($theme-color-primary,0.8);
+    }
+}
+
 .btn {
 	font-weight: 600;
 	padding: 0.6rem 1.25rem;

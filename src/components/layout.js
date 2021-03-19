@@ -19,7 +19,7 @@ const Layout = ({ children, pageInfo }) => {
         <Header siteTitle={data.site.siteMetadata.title} />
         <main>{children}</main>
         <footer>
-          <div class='footer-bottom text-center py-5'>
+          <div className='footer-bottom text-center py-5'>
             <span>© Copyright {new Date().getFullYear()} Caf.js Labs LLC</span>
           </div>
         </footer>
