@@ -12,7 +12,7 @@ const Epilogue = ({ heading, intro, nextPage}) => {
             <Container>
 	      <h1 className="text-white mb-3">{heading}</h1>
 	      <div className="section-intro text-white mb-3 single-col-max mx-auto">{intro}</div>
-              <div class="pt-3 text-center">
+              <div className="pt-3 text-center">
                 <Link to={nextPage} className="bt btn-light p-3"> Learn more → </Link>
 	      </div>
 	    </Container>

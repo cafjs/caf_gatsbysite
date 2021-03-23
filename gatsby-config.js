@@ -22,7 +22,15 @@ module.exports = {
                 }
             }
         },
-        `gatsby-plugin-mdx`,
+        {
+            resolve: `gatsby-plugin-mdx`,
+            options: {
+                defaultLayouts: {
+
+                    default: require.resolve("./src/components/layoutMDX.js"),
+                }
+            }
+        },
         `gatsby-plugin-fontawesome-css`,
         `gatsby-plugin-sass`,
         `gatsby-transformer-sharp`,

@@ -318,3 +318,81 @@ a.theme-link {
 .page-intro {
 	font-size: 1.125rem;
 }
+
+.mdx-article {
+
+    padding: 2rem;
+    color: $theme-text-color-secondary;
+
+    strong {
+	color: $theme-text-color-primary;
+    }
+    .docs-heading {
+	font-size: 3rem;
+	margin-bottom: 2rem;
+	position: relative;
+    }
+
+    .docs-time {
+	position: absolute;
+	display:inline-block;
+	right: 0;
+	bottom: 1rem;
+	font-size: 0.75rem;
+	font-weight: normal;
+	color: lighten($theme-text-color-secondary, 10%);
+    }
+    .docs-section {
+	padding: 2rem 0;
+	border-bottom: 1px solid $theme-divider;
+	p {
+	    &:last-child {
+		margin-bottom: 0;
+	    }
+	}
+
+    }
+
+    .section-heading {
+	font-size: 1.875rem;
+	margin-bottom: 1rem;
+	color: $theme-text-color-primary
+    }
+
+    h1 {
+        font-size: 3rem;
+        position: relative;
+    }
+
+    h2 {
+	color: darken($theme-text-color-secondary, 10%);
+    }
+
+    h3 {
+	font-size: 1.5rem;
+	color: darken($theme-text-color-secondary, 10%);
+    }
+
+    h4 {
+	font-size: 1.25rem;
+	color: darken($theme-text-color-secondary, 10%);
+    }
+
+    h5 {
+	font-size: 1rem;
+	color: darken($theme-text-color-secondary, 10%);
+    }
+
+    h6 {
+	font-size: 0.875rem;
+	color: darken($theme-text-color-secondary, 10%);
+    }
+    ul, ol, dl {
+	padding-left: 1.5rem;
+    }
+    li {
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+    }
+
+}

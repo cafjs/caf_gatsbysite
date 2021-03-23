@@ -23,10 +23,10 @@ const Header = ({ siteTitle }) => (
           </div>
           <div className="docs-top-utilities d-flex justify-content-end align-items-center">
 
-	    <ul className="social-list list-inline mx-md-3 mx-lg-5 mb-0 d-none d-lg-flex">
+	    <ul className="social-list list-inline  mx-5 mx-md-5 mx-lg-5 mb-0  d-flex">
 	      <li className="list-inline-item"><a href="https://github.com/cafjs/caf"> <FontAwesomeIcon className="fa-fw" icon={faGithub}  /></a></li>
 	    </ul>
-	    <a href="https://root-launcher.cafjs.com" className="btn btn-primary d-none d-lg-flex">Docs</a>
+	    <a href="https://root-launcher.cafjs.com" className="btn btn-primary  d-flex">Docs</a>
 	  </div>
         </Container>
       </div>
