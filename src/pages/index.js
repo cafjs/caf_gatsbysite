@@ -5,6 +5,7 @@ import MyCard from '../components/myCard';
 import Layout from '../components/layout';
 import SEO from '../components/seo';
 import Intro from '../components/intro';
+import Epilogue from '../components/epilogue';
 import Gears from '../svgs/gearsIcon.svg';
 import Lighthouse from '../svgs/lighthouse.svg';
 import Pipes from '../svgs/pipes.svg';
@@ -32,6 +33,7 @@ const IndexPage = () => (
           </Row>
         </div>
       </Container>
+      <Epilogue heading="Host your app with us" intro="Fully managed backend that delivers predictable performance and profit per customer, with a baseline cost of less than $6 per year." nextPage="/hosting"/>
     </Layout>
 );
 

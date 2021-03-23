@@ -1,13 +1,12 @@
-import { Link} from "gatsby";
+import { Link } from "gatsby";
 import PropTypes from 'prop-types';
 
 import React from 'react';
-import { Card} from 'react-bootstrap';
+import { Card } from 'react-bootstrap';
 
 
 
 const MyCard = ({children, title, description, nextPage}) => {
-    console.log(description);
     return (
         <Card className="shadow-sm">
           <Card.Body>

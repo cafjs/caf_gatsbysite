@@ -26,7 +26,7 @@ const Header = ({ siteTitle }) => (
 	    <ul className="social-list list-inline mx-md-3 mx-lg-5 mb-0 d-none d-lg-flex">
 	      <li className="list-inline-item"><a href="https://github.com/cafjs/caf"> <FontAwesomeIcon className="fa-fw" icon={faGithub}  /></a></li>
 	    </ul>
-	    <a href="https://root-launcher.cafjs.com" className="btn btn-primary d-none d-lg-flex">Launch</a>
+	    <a href="https://root-launcher.cafjs.com" className="btn btn-primary d-none d-lg-flex">Docs</a>
 	  </div>
         </Container>
       </div>
