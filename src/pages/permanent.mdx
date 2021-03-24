@@ -3,45 +3,76 @@ title: Permanent Presence
 ---
 ## Permanent Presence
 
-Modern browsers enable off-line experiences for Progressive Web Apps (PWAs) with service workers. A service worker runs a custom script, in a separate context from the web page, to mediate network access and cache data. When  connectivity is poor, it can pretend that the network is still working by fetching from a local cache or delaying sends.
+Modern browsers enable offline experiences for Progressive Web Apps (PWAs) with service workers. A service worker runs a custom script, in a separate context from the web page, to mediate network access and cache data. When  connectivity is poor, it can pretend that the network is still working by fetching from a local cache or delaying sends.
 
-But what about the rest of the world? Services, clients, or devices that need to interact? They all have to wait.
+But what about the rest of the world? Services, clients, or devices that need  interaction? They all have to wait.
 
 And, for safety reasons, connectivity is not always symmetric. Most IoT devices are not directly exposed to the Internet, otherwise they would not last an hour.
 This makes remote interaction even more difficult.
 
-Caf.js safely makes devices and web app instances (progressive or not) always accessible from anywhere at any time. The key is an abstraction that we call reverse service worker.
+**Caf.js** makes devices and web app instances (progressive or not) always accessible from anywhere at any time. An abstraction that we call reverse service worker keeps them safe. With **Caf.js**, a three-way isomorphic framework, you can create new sharing experiences with a few hundred lines of JavaScript.
 
-### Reverse Service Workers (RSW)
-
-An RSW lives in the Cloud and has a dual role to a service worker in the browser: mediate network access to one device or app instance from anywhere in the Internet.
-
-Each RSW has a public and stable URL, a set of methods that can be called remotely, some private state, and the ability to enforce and manage a security policy to restrict external interactions. RSWs are implemented with a cloud assistant, i.e., they are based on the Actor Model, and thousands of them can run on one node.js process.
-
-
-RSWs have two modes of operation:
-
-#### Pass-through mode
-
-The device or app instance is connected to an RSW using a web socket. The RSW receives requests from the Internet through the external
-
-#### Impersonation mode
-
-### Three-way Isomorphic
-
-### Use Cases
+Let's look at a few examples.
 
 #### Safe sharing of Bluetooth devices
 
- An indoor exercise bike, a heartrate/ECG monitor, a connected toy, an smart light bulb,
+So many Bluetooth devices around us. An indoor exercise bike, a heartrate/ECG monitor, a connected toy, an smart light bulb, a speaker, a temperature sensor, a thermostat, a drone, a fridge, a watch, a battery, a car diagnostics tool...
 
-Caf.js is a three-way isomorphic framework, not only we can render pages in the Cloud but also
+What if we could instantly share them across the Internet? With your doctor, your fitness instructor, your friend in a Zoom session, your colleagues working from home, a remote expert...
+
+And do that safely, with no setup, with just a browser. E-mail or text a URL to your peer, and when they click on the link they control the device. But only until you revoke access or the embedded token expires.
+
+With **Caf.js** you can do that with a few hundred lines of JavaScript. There are a few examples in GitHub, a cheap ECG/Body temperature/SPO2 monitor [HealthyPi](https://github.com/cafjs/caf_healthypi.git), a programmable beacon with many sensors [Puck.js](https://github.com/cafjs/caf_hellopuckjs.git), and it is easy to build your own with our app template generator tool, i.e., `cafjs generate yourapp iotbrowser`.
 
 #### Integration of real devices in VR/AR
 
 
-```
-const a = function(x) {
-    return "foo";
-}
-```
+
+### Caf.js Key Concepts
+
+#### Reverse Service Workers (RSW)
+
+An RSW lives in the Cloud and has a dual role to a service worker in the browser. It mediates network requests from anywhere in the Internet that target one device or app instance.
+
+Each RSW has an stable URL that provides a public name for the endpoint, some private state, a set of methods that can be called remotely, and a managed security policy that restricts who can call them.
+
+RSWs are implemented with a **cloud assistant**, following the Actor Model, and thousands of them can run on one node.js process.
+
+RSWs have two modes of operation:
+
+##### 1. Pass-through mode
+
+An endpoint, for example, a device or app instance, connects to an RSW using a web socket. The RSW receives API requests from the Internet, performs security checks, updates its state, and then notifies the connected endpoint, or other clients also using web sockets. These notifications can then trigger actions in the physical world, or keep other user interfaces in sync.
+
+Any Internet client with proper credentials can now, in real-time, trigger device actions or read its data. But clients never have direct access, credentials are short-lived signed tokens (JWT), access policy is centrally managed and consistent for all your devices, and, more importantly, the interface could just expose the minimal functionality required by your app.
+
+
+##### 2. Impersonation mode
+
+What happens when the endpoint is not connected? The RSW **pretends** to be the endpoint, making decisions on its behalf based on local state, and helping the rest of the world to move forward.
+
+RSWs typically implement both modes, switching between them based on endpoint connectivity. For example, it could start in impersonation mode, negotiate some actions, and then relay those actions in pass-through mode when the endpoint eventually connects.
+
+What if local device actions taken offline are incompatible with actions proposed by the RSW? The answer is very application dependent, but a simple approach is to route actions through the RSW, and only perform emergency actions when offline.
+
+#### Three-way Isomorphic
+
+What is really an endpoint? In most cases we are not going to modify the firmware of a simple device, or patch an existing application. Instead, we write bridging code, also in JavaScript, that will interface locally with the real endpoint over Bluetooth or other protocol.
+
+Therefore, most applications in **Caf.js** are made of three JavaScript programs, i.e., front-end, cloud, and device bridging code.
+
+The advantage of **Caf.js** is that these three programs are all developed, debugged, and deployed as a single unit. They also share many software components. In fact, using our CLI tools, you can emulate in a laptop both the Cloud and the device. And then, trace a request from the browser, to the emulated Cloud, and finally to the emulated device, all without leaving the Chrome web developer tools.
+
+But that's not all. **Caf.js** is a **three-way isomorphic** framework. The device bridging code runs in a Raspberry Pi, but it can also run in a browser, and in the Cloud too.
+
+And that opens many doors. You don't need to carry a Raspberry Pi or a laptop. Your phone, with a browser that supports the Web Bluetooth API, such as Chrome for Android, can also bridge Bluetooth devices.
+
+Some applications will still require a  dedicated bridging device, but many will benefit from the convenience of the phone. And for Android phones is even better, the default browser is all you need!
+
+Moreover, running bridging code in the Cloud
+
+* simplifies endpoint impersonation for RSWs,
+* enables realistic load testing by emulating thousands of devices in the Cloud,
+* and dynamically creates user interfaces by introspecting the bridging code.
+
+and all this magic relies on standard tools, i.e.,  *browserify*.
