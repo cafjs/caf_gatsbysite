@@ -1,11 +1,44 @@
 ---
-title: Hello, world!
+title: Permanent Presence
 ---
-# Hello world
+## Permanent Presence
 
- Bla blabla bla
+Modern browsers enable off-line experiences for Progressive Web Apps (PWAs) with service workers. A service worker runs a custom script, in a separate context from the web page, to mediate network access and cache data. When  connectivity is poor, it can pretend that the network is still working by fetching from a local cache or delaying sends.
 
-## Second title
+But what about the rest of the world? Services, clients, or devices that need to interact? They all have to wait.
+
+And, for safety reasons, connectivity is not always symmetric. Most IoT devices are not directly exposed to the Internet, otherwise they would not last an hour.
+This makes remote interaction even more difficult.
+
+Caf.js safely makes devices and web app instances (progressive or not) always accessible from anywhere at any time. The key is an abstraction that we call reverse service worker.
+
+### Reverse Service Workers (RSW)
+
+An RSW lives in the Cloud and has a dual role to a service worker in the browser: mediate network access to one device or app instance from anywhere in the Internet.
+
+Each RSW has a public and stable URL, a set of methods that can be called remotely, some private state, and the ability to enforce and manage a security policy to restrict external interactions. RSWs are implemented with a cloud assistant, i.e., they are based on the Actor Model, and thousands of them can run on one node.js process.
+
+
+RSWs have two modes of operation:
+
+#### Pass-through mode
+
+The device or app instance is connected to an RSW using a web socket. The RSW receives requests from the Internet through the external
+
+#### Impersonation mode
+
+### Three-way Isomorphic
+
+### Use Cases
+
+#### Safe sharing of Bluetooth devices
+
+ An indoor exercise bike, a heartrate/ECG monitor, a connected toy, an smart light bulb,
+
+Caf.js is a three-way isomorphic framework, not only we can render pages in the Cloud but also
+
+#### Integration of real devices in VR/AR
+
 
 ```
 const a = function(x) {

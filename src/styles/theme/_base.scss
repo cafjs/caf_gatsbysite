@@ -359,6 +359,10 @@ a.theme-link {
 	color: $theme-text-color-primary
     }
 
+    code {
+        padding: 0;
+    }
+
     h1 {
         font-size: 3rem;
         position: relative;
