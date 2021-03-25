@@ -12,7 +12,9 @@ This makes remote interaction even more difficult.
 
 **Caf.js** makes devices and web app instances (progressive or not) always accessible from anywhere at any time. An abstraction that we call reverse service worker keeps them safe. A three-way isomorphic framework enables quick prototyping of new sharing experiences.
 
-Let's look at a few use cases.
+<hr/>
+
+Let's look at a few use cases first.
 
 #### Safe sharing of Bluetooth devices
 
@@ -26,13 +28,15 @@ With **Caf.js** you can do that with a few hundred lines of JavaScript. There ar
 
 #### Integration of real devices in VR/AR
 
-If a virtual world represents your real home, and action in VR could switch off the lights of your real home, thousands of miles away.
+When a virtual world represents your real home, and action in VR could switch off the lights of your real home, thousands of miles away.
 
-This could be implemented by creating an avatar of the lamp, which forwards actions to the physical lamp across the Internet. However, this is not an easy problem to solve. Any delays or connectivity issues will ruin the virtual experience. And directly exposing your lamp to the Internet is risky.
+This could be implemented by creating an avatar of the lamp, which forwards actions to the physical lamp across the Internet.
+
+However, this is not an easy problem to solve. Any delays or connectivity issues will ruin the virtual experience. And directly exposing your lamp to the Internet is risky.
 
 Instead, **Caf.js** can take care of the backend for your avatar, ensuring safety and predictable latency, and then you can focus on making the avatar more realistic.
 
-What about AR? The use case is very different, but the underlying technology is the same. You are likely to be in the same room, and when you look fixedly at the physical lamp, a user interface will pop up allowing you to change the color hue.
+What about AR? The use case is very different, but our core technology is the same. You are likely to be in the same room, and when you look fixedly at the physical lamp, a user interface will pop up allowing you to change the color hue.
 
 The connectivity challenges with AR are not any easier. What if the lamp is in a vacation rental, or in a shop, or at the office? It would be much easier if the AR client device just needed Internet connectivity, and the access policy was centrally managed for all the shared devices, as we do in **Caf.js**.
 
@@ -42,6 +46,7 @@ For example, an interior designer can configure the lights at your home remotely
 
 A bare bones example to do just that is in GitHub. [Hue](https://github.com/cafjs/caf_hellohue.git) controls a color smart bulb using three interfaces VR, AR, and html, keeping all of them in sync, and in sync with reality.
 
+<hr/>
 
 How are these experiences implemented with **Caf.js**? Let's start with a few new concepts.
 
@@ -84,10 +89,10 @@ And that opens many doors. You don't need to carry a Raspberry Pi or a laptop. Y
 
 Some applications will still require a  dedicated bridging device, but many will benefit from the convenience of the phone. And for Android phones is even better, the default browser is all you need!
 
-Moreover, running bridging code in the Cloud
+What about running bridging code in the Cloud? Three important benefits:
 
-* simplifies endpoint impersonation for RSWs,
-* enables realistic load testing by emulating thousands of devices in the Cloud,
-* and dynamically creates user interfaces by introspecting the bridging code.
+* Simplifies endpoint impersonation for RSWs.
+* Enables realistic load testing by emulating thousands of devices in the Cloud.
+* Dynamically creates user interfaces by introspecting the bridging code.
 
-and all this magic relies on standard tools, i.e.,  *browserify*.
+and all this isomorphic magic relies on standard tools, such as *browserify*.

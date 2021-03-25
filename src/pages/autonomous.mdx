@@ -1,0 +1,52 @@
+---
+title: Autonomous Computation
+---
+## Autonomous Computation
+
+The Web was built with a request-response model. Servers were expensive and slow, and that model was a very good fit for the compute resources available at the time.
+
+Many years later, and now we live in the land of milk and honey in terms of compute resources. What else can we do with all that power?
+
+One obvious candidate is to enable web clients to launch long term activities in the Cloud, where long term could mean years. These activities could be a good complement to a request-response model. For example, they could warn you, or take some action, if something critical to you has happened on the Web. And that would not be spam, after all you were the one setting up the continuous query.
+
+It is unreasonable to assume that anybody should be able to launch an **arbitrary** activity in any site. Someone has to pay for it. Denial of service becomes trivial. Running untrusted code is unsafe. We need a bit more structure to make it happen.
+
+And that's when **Caf.js** comes into play. Make it easier to write applications that create **specific** long-term activities on behalf of subscribed customers. As long as the end customer maintains the app subscription, the activities continue. The application guarantees that end customers do not abuse the system. The platform provider hosting the app (could be us!) ultimately guarantees that the app does not abuse the system.
+
+<hr/>
+
+Let's look at a few use cases.
+
+#### Cloud-based Multi-tasking
+
+Modern browsers throttle background tabs, making them unusable for running tasks. Service workers of web apps that are not explicitly installed (most of them) can be garbage collected at any time. AFAIK, without browser extensions, there are no reliable methods in the browser to keep background tasks active long term.
+
+And this is all for a good reason. The last thing you want is a website that you visited three months ago is still draining your phone battery.
+
+But to recreate a more desktop-like experience in the browser we need reliable background tasks. If we cannot run them in the phone, can we do it in the Cloud?
+
+The critical part is the context switch between activities. We want to convince the user that background tasks are running in the phone, but they are not, they are running in the Cloud. When we swap a visible *iframe* of one activity by another one, we need to show progress, and the transition needs to be smooth.
+
+In **Caf.js** cloud-based multi-tasking is implemented by some trickery in the [Launcher](https://github.com/cafjs/caf_launcher.git) app, and enabling proactive server side rendering in most of our apps. We describe this technique below.
+
+#### Continuous GraphQL Queries
+
+Many front-ends configure React components with GraphQL queries and a request-response model. The client describes in a single request what its components need, and the server evaluates the query and returns the configuration.
+
+What happens when the configuration changes? The server could notify the client using a web socket, and then the client reloads. Or the client could repeat the query every so often.
+
+But we could do better. The previous approaches add latency and force unnecessary reloads. Instead, the client could install a continuous query in the Cloud and, when the configuration changes, receive a new configuration using a web socket. There is no false alarms, the server knows exactly what the client needs. There is no extra delay, the notification is the new configuration.
+
+But we could do even better. The server could regularly interact with many external services to gather configuration data, and cache it locally. And now all the continuous GraphQL queries evaluate on local data, reused for the benefit of thousands of clients.
+
+The [HelloGraphQL](https://github.com/cafjs/caf_hellographql.git) weather app is an example of these ideas. Clients obtain weather information by installing a continuous query in the Cloud. The backend periodically polls the *OpenWeather* API. Queries evaluate on local data. When the weather changes, a registered IoT device gets a notification.
+
+<hr/>
+
+How are these experiences implemented with **Caf.js**? Let's start with a few new concepts.
+
+#### Proactive Server Side Rendering (PSSR)
+
+#### Pulse Requests
+
+#### Persistent Sessions
