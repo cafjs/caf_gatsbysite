@@ -10,25 +10,40 @@ But what about the rest of the world? Services, clients, or devices that need  i
 And, for safety reasons, connectivity is not always symmetric. Most IoT devices are not directly exposed to the Internet, otherwise they would not last an hour.
 This makes remote interaction even more difficult.
 
-**Caf.js** makes devices and web app instances (progressive or not) always accessible from anywhere at any time. An abstraction that we call reverse service worker keeps them safe. With **Caf.js**, a three-way isomorphic framework, you can create new sharing experiences with a few hundred lines of JavaScript.
+**Caf.js** makes devices and web app instances (progressive or not) always accessible from anywhere at any time. An abstraction that we call reverse service worker keeps them safe. A three-way isomorphic framework enables quick prototyping of new sharing experiences.
 
-Let's look at a few examples.
+Let's look at a few use cases.
 
 #### Safe sharing of Bluetooth devices
 
-So many Bluetooth devices around us. An indoor exercise bike, a heartrate/ECG monitor, a connected toy, an smart light bulb, a speaker, a temperature sensor, a thermostat, a drone, a fridge, a watch, a battery, a car diagnostics tool...
+So many Bluetooth devices around us. An indoor exercise bike, a heart rate/ECG monitor, a connected toy, an smart light bulb, a speaker, a temperature sensor, a thermostat, a drone, a fridge, a watch, a battery, a car diagnostics tool...
 
 What if we could instantly share them across the Internet? With your doctor, your fitness instructor, your friend in a Zoom session, your colleagues working from home, a remote expert...
 
 And do that safely, with no setup, with just a browser. E-mail or text a URL to your peer, and when they click on the link they control the device. But only until you revoke access or the embedded token expires.
 
-With **Caf.js** you can do that with a few hundred lines of JavaScript. There are a few examples in GitHub, a cheap ECG/Body temperature/SPO2 monitor [HealthyPi](https://github.com/cafjs/caf_healthypi.git), a programmable beacon with many sensors [Puck.js](https://github.com/cafjs/caf_hellopuckjs.git), and it is easy to build your own with our app template generator tool, i.e., `cafjs generate yourapp iotbrowser`.
+With **Caf.js** you can do that with a few hundred lines of JavaScript. There are a few examples already in GitHub, like a cheap ECG/Body temperature/SPO2 monitor [HealthyPi](https://github.com/cafjs/caf_healthypi.git), or a programmable beacon with many sensors [Puck.js](https://github.com/cafjs/caf_hellopuckjs.git), and it is easy to build your own with our app template generator tool, i.e., `cafjs generate yourapp iotbrowser`.
 
 #### Integration of real devices in VR/AR
 
+If a virtual world represents your real home, and action in VR could switch off the lights of your real home, thousands of miles away.
+
+This could be implemented by creating an avatar of the lamp, which forwards actions to the physical lamp across the Internet. However, this is not an easy problem to solve. Any delays or connectivity issues will ruin the virtual experience. And directly exposing your lamp to the Internet is risky.
+
+Instead, **Caf.js** can take care of the backend for your avatar, ensuring safety and predictable latency, and then you can focus on making the avatar more realistic.
+
+What about AR? The use case is very different, but the underlying technology is the same. You are likely to be in the same room, and when you look fixedly at the physical lamp, a user interface will pop up allowing you to change the color hue.
+
+The connectivity challenges with AR are not any easier. What if the lamp is in a vacation rental, or in a shop, or at the office? It would be much easier if the AR client device just needed Internet connectivity, and the access policy was centrally managed for all the shared devices, as we do in **Caf.js**.
+
+Where **Caf.js** really shines is when a team, with some members remote in VR, and others local in AR, collaborate by interacting with shared physical devices. With **Caf.js** all these user interfaces, and the state of the connected physical devices, are kept in sync.
+
+For example, an interior designer can configure the lights at your home remotely using VR, and as you see the changes in the real world, you can also suggest modifications in real-time with your AR interface.
+
+A bare bones example to do just that is in GitHub. [Hue](https://github.com/cafjs/caf_hellohue.git) controls a color smart bulb using three interfaces VR, AR, and html, keeping all of them in sync, and in sync with reality.
 
 
-### Caf.js Key Concepts
+How are these experiences implemented with **Caf.js**? Let's start with a few new concepts.
 
 #### Reverse Service Workers (RSW)
 
@@ -42,7 +57,7 @@ RSWs have two modes of operation:
 
 ##### 1. Pass-through mode
 
-An endpoint, for example, a device or app instance, connects to an RSW using a web socket. The RSW receives API requests from the Internet, performs security checks, updates its state, and then notifies the connected endpoint, or other clients also using web sockets. These notifications can then trigger actions in the physical world, or keep other user interfaces in sync.
+An endpoint, for example, a device or app instance, connects to an RSW using a web socket. The RSW receives API requests from the Internet, performs security checks, updates its state, and then notifies the connected endpoint, or other client using web sockets. These notifications can then trigger actions in the physical world, or keep other user interfaces in sync.
 
 Any Internet client with proper credentials can now, in real-time, trigger device actions or read its data. But clients never have direct access, credentials are short-lived signed tokens (JWT), access policy is centrally managed and consistent for all your devices, and, more importantly, the interface could just expose the minimal functionality required by your app.
 
@@ -53,7 +68,7 @@ What happens when the endpoint is not connected? The RSW **pretends** to be the 
 
 RSWs typically implement both modes, switching between them based on endpoint connectivity. For example, it could start in impersonation mode, negotiate some actions, and then relay those actions in pass-through mode when the endpoint eventually connects.
 
-What if local device actions taken offline are incompatible with actions proposed by the RSW? The answer is very application dependent, but a simple approach is to route actions through the RSW, and only perform emergency actions when offline.
+What if local device actions, taken while offline, are incompatible with actions proposed by the RSW? The answer is very application dependent, but a simple approach is to route actions through the RSW, and only perform emergency local actions when offline.
 
 #### Three-way Isomorphic
 
