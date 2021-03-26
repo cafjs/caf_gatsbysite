@@ -1,0 +1,61 @@
+---
+title: Reliable Service Orchestration
+---
+## Reliable Service Orchestration
+
+A Cloud Assistant (CA) has state, but its internal state is tiny, think kilobytes.
+
+This state is private, and can only be changed by processing a request. Requests are strictly serialized, and changes are rolled back on errors. Keeping the state consistent is top priority.
+
+A CA always checkpoints before externalizing state changes. It remembers after a crash the last committed external action, picking it up from there.
+
+This makes a cloud assistant a natural platform to orchestrate interactions with external services.
+
+The foundation of a CA is a *Transactional Actor*. We explain what this means later on.
+
+But first let's look at a use case.
+
+<hr/>
+
+### JAMstack
+
+High performance front-ends are moving to a new architecture, exemplified by *JAMstack*:
+
+1. Create your website with a Static Site Generator (SSG), such as as *Gatsby*.
+2. Cache it everywhere using a CDN.
+3. Rely on APIs for external services and loading dynamic content.
+
+These sites are not always static. For example, *Gatsby* creates React components that will be hydrated when the page loads. And after that a *Gatsby* site becomes a web app.
+
+What is the weakness of this clean architecture? You can ended up with many external APIs. For sending an e-mail, loading dynamic content, paying a bill, authenticating a user, shipping something, storing user settings,... And they could come from different providers, requiring different API credentials.
+
+And where all these credentials ended up? The browser. And, with a new wave of security hardware bugs, there is no place to hide in the browser. Heroic attempts like *site isolation* are complex, inefficient, and not universally supported. These credentials are gone...
+
+And what if a sequence of API calls is needed to complete a task, and then the client crashes? You got the money, but did not follow up with the order. You ordered the goods, but never ship them. You sent that confirmation e-mail, but did nothing. And you have no record of what actually happened.
+
+And what about latency and atomicity of the dynamic content? The page starts with default values, and then it flips to actual ones. This is very visible because the static content loads so fast. And the dynamic content could be loaded from different sources, at different speeds, making the page inconsistent for a while, confusing your customer.
+
+How does **Caf.js** help JAMstack?
+
+A typical **Caf.js** application has a Cloud Assistant (CA) per customer and follows least privilege principles. A CA protects the API credentials, and its external methods limit what these credentials can do. For example, an API credential could allow sending an e-mail to anybody, but the CA will ensure that they are only sent to the support account.
+
+How does the client invoke CA methods? A short-lived signed credential (JWT) provides temporary access to these methods. This credential will be exposed to the browser, and possibly compromised, but the damage is much less than exposing all your raw credentials.
+
+A CA is a **smart card** for your API credentials.
+
+What about sequencing API calls? The CA exposes one external method to trigger the sequence and, using its internal state, keeps track of progress. It never forgets about a started sequence, and safely keeps retrying after failures, as we will explain next.
+
+A CA is a **reliable state machine** for your API calls.
+
+And dynamic content loading? A CA can be made autonomous, as we described in another section, and can prefetch content from multiple sources. Then, one CA method call loads a consistent snapshot of all the dynamic content. Loading could be even faster with proactive server side rendering, described in the autonomous section.
+
+A CA is a **caching reverse proxy** for dynamic content.
+
+<hr/>
+
+
+Following the Actor Model, A cloud assistant serializes requests with a queue. Moreover, serialization is a cluster-wide property, with at most one active cloud assistant with a given name. This helps to keep state consistent.
+
+**Caf.js** takes extreme care managing state, checkpointing in a Redis instance before externalizing any state changes. Changes are managed transactionally within the scope of a request, and an application error or exception rolls back to a previous state.
+
+This makes a cloud assistant a natural platform to implement reliable state machines. State machines that can drive the orchestration of services.

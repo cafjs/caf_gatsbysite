@@ -56,11 +56,18 @@ Two simple optimizations make PSSR practical:
 *  Do not render when the page is likely to change again before the client reads it. Set expire time in cache to handle estimation errors.
 * Pick a target cache that is close to the client.
 
-With PSSR a page request is first looked up in a close by cache. If found, the html page is displayed, and then it continues with hydration, similar to SSR. If missing, the request is forwarded to the server.
+With PSSR a page request is first looked up in a cache close by. If found, the html page is displayed, and then it continues with hydration, similar to SSR. If missing, the request is forwarded to the server.
 
-Why PSSR?
+Why PSSR? Manage a cache inside the network of a 5G mobile provider (AWS Wavelength), and 5G clients will load a page instantly, in low tens of milliseconds. No differences between static and dynamic content. And with much less complexity than distributed rendering.
 
 
-#### Pulse Requests
+#### Pulse Requests and Notifications
 
-#### Persistent Sessions
+A cloud assistant is made autonomous by implementing the `__ca_pulse__` method.
+This method will be called periodically by the framework.
+
+Notifications are created  by the `session` plugin. When the client is offline notifications are queued in the cloud. A cloud assistant can have multiple notification queues, identified by names chosen by the client. This allows stirring some notifications to a particular client device. Notification queues are managed by application code to avoid running out of memory.
+
+ The client library combines a request-response style with message events triggered by notifications. A new session can specify a name to target a particular notification queue.
+
+See the documentation and examples for more info.
