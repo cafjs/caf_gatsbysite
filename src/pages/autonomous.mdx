@@ -47,6 +47,20 @@ How are these experiences implemented with **Caf.js**? Let's start with a few ne
 
 #### Proactive Server Side Rendering (PSSR)
 
+Traditional Server Side Rendering (SSR) uses a request-response model. When a page request hits the server, the server renders and returns the html.
+
+Proactive Server Side Rendering (PSSR) does not wait for a page request. Whenever there is a change that affects the page, the server renders and pushes the html to an external cache, using an unguessable key known by the client.
+
+Two simple optimizations make PSSR practical:
+
+*  Do not render when the page is likely to change again before the client reads it. Set expire time in cache to handle estimation errors.
+* Pick a target cache that is close to the client.
+
+With PSSR a page request is first looked up in a close by cache. If found, the html page is displayed, and then it continues with hydration, similar to SSR. If missing, the request is forwarded to the server.
+
+Why PSSR?
+
+
 #### Pulse Requests
 
 #### Persistent Sessions
