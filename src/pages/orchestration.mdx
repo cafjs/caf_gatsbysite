@@ -3,15 +3,11 @@ title: Reliable Service Orchestration
 ---
 ## Reliable Service Orchestration
 
-A Cloud Assistant (CA) has state, but its internal state is tiny, think kilobytes.
+A typical Cloud Assistant (CA) has kilobytes of private state, carefully managed to be consistent with its external commitments, even after server failures.
 
-This state is private, and can only be changed by processing a request. Requests are strictly serialized, and changes are rolled back on errors. Keeping the state consistent is top priority.
+This makes a CA a natural orchestrator of interactions with external services.
 
-A CA always checkpoints before externalizing state changes. It remembers after a crash the last committed external action, picking it up from there.
-
-This makes a cloud assistant a natural platform to orchestrate interactions with external services.
-
-The foundation of a CA is a *Transactional Actor*. We explain what this means later on.
+CAs are implemented with **transactional actors** that interact with the world using **transactional plugins**. We will explain what this means in a moment.
 
 But first let's look at a use case.
 
@@ -20,8 +16,7 @@ But first let's look at a use case.
 ### JAMstack
 
 High performance front-ends are moving to a new architecture, exemplified by *JAMstack*:
-
-1. Create your website with a Static Site Generator (SSG), such as as *Gatsby*.
+1. Create your website with a Static Site Generator (SSG), such as *Gatsby*.
 2. Cache it everywhere using a CDN.
 3. Rely on APIs for external services and loading dynamic content.
 
@@ -29,7 +24,7 @@ These sites are not always static. For example, *Gatsby* creates React component
 
 What is the weakness of this clean architecture? You can ended up with many external APIs. For sending an e-mail, loading dynamic content, paying a bill, authenticating a user, shipping something, storing user settings,... And they could come from different providers, requiring different API credentials.
 
-And where all these credentials ended up? The browser. And, with a new wave of security hardware bugs, there is no place to hide in the browser. Heroic attempts like *site isolation* are complex, inefficient, and not universally supported. These credentials are gone...
+And where do all these credentials end up? In the browser. And with a new wave of security hardware bugs, there is no place to hide in the browser. Heroic attempts like *site isolation* are complex, inefficient, and not universally supported. These credentials are gone...
 
 And what if a sequence of API calls is needed to complete a task, and then the client crashes? You got the money, but did not follow up with the order. You ordered the goods, but never ship them. You sent that confirmation e-mail, but did nothing. And you have no record of what actually happened.
 
@@ -37,25 +32,43 @@ And what about latency and atomicity of the dynamic content? The page starts wit
 
 How does **Caf.js** help JAMstack?
 
-A typical **Caf.js** application has a Cloud Assistant (CA) per customer and follows least privilege principles. A CA protects the API credentials, and its external methods limit what these credentials can do. For example, an API credential could allow sending an e-mail to anybody, but the CA will ensure that they are only sent to the support account.
+A typical **Caf.js** application has a Cloud Assistant (CA) per customer and follows least privilege principles. A CA protects the API credentials, and its external methods limit what these credentials can do. For example, an API credential could allow sending an e-mail to anybody, but the CA will ensure that it is only sent to the support account.
 
 How does the client invoke CA methods? A short-lived signed credential (JWT) provides temporary access to these methods. This credential will be exposed to the browser, and possibly compromised, but the damage is much less than exposing all your raw credentials.
 
 A CA is a **smart card** for your API credentials.
 
-What about sequencing API calls? The CA exposes one external method to trigger the sequence and, using its internal state, keeps track of progress. It never forgets about a started sequence, and safely keeps retrying after failures, as we will explain next.
+What about sequencing API calls? A CA could provide an external method to trigger the sequence, and then keep track of its progress with internal state. This CA will also retry an started sequence after a failure. Retrying is always safe, as we will explain next.
 
 A CA is a **reliable state machine** for your API calls.
 
-And dynamic content loading? A CA can be made autonomous, as we described in another section, and can prefetch content from multiple sources. Then, one CA method call loads a consistent snapshot of all the dynamic content. Loading could be even faster with proactive server side rendering, described in the autonomous section.
+And dynamic content loading? A CA can be made autonomous, as we described in another section, and prefetch content from multiple sources. Then, a consistent snapshot of the dynamic content can be loaded with one CA method call. Loading could be even faster with proactive server side rendering, described in the autonomous section.
 
 A CA is a **caching reverse proxy** for dynamic content.
 
+See the [HelloPayPal](https://github.com/cafjs/caf_hellopaypal.git) app for an implemention based on these ideas of a reliable PayPal checkout.
+
 <hr/>
 
+How are these experiences implemented with **Caf.js**?
 
-Following the Actor Model, A cloud assistant serializes requests with a queue. Moreover, serialization is a cluster-wide property, with at most one active cloud assistant with a given name. This helps to keep state consistent.
+### Transactional Actors and Plugins
 
-**Caf.js** takes extreme care managing state, checkpointing in a Redis instance before externalizing any state changes. Changes are managed transactionally within the scope of a request, and an application error or exception rolls back to a previous state.
+The foundation of a Cloud Assistant (CA) is the Actor Model. An actor has a location-independent name, some private state, a queue to serialize the processing of requests, and the ability to asynchronously interact with other actors.
 
-This makes a cloud assistant a natural platform to implement reliable state machines. State machines that can drive the orchestration of services.
+There is never more than one active CA with a given name, making serialization a **cluster-wide** property.
+
+CAs are **transactional actors**. Each request creates a transaction that modifies internal state when it commits, or rolls back changes when it returns an application error or throws an exception.
+
+A CA checkpoints to a Redis instance **before** commiting a transaction. It externalizes state changes **after** the transaction commits, i.e., after Redis makes the checkpoint stable. Therefore, it can recover from a failure and the world will never notice.
+
+How does **Caf.js** delay externalization? It uses **transactional plugins** to mediate external interactions. Invoking a plugin method just appends to a log the intent of performing an operation. If there are no errors, both the plugin logs and the state changes are checkpointed together. After the checkpoint finishes, the transaction is assumed to be committed, and then the "real" plugin methods are invoked, making the changes externally visible.
+
+What happens when there is a failure? There are two cases:
+
+1. The checkpoint made it to Redis, but we crashed while invoking the committed actions. Recover by loading from the checkpoint the new state and the committed actions, and then (re)do all the committed actions.
+2. The checkpoint never made it to Redis. Anything that happened during the failed transaction had no side effects, and can be ignored. Recover as in Case 1 but with the previous checkpoint.
+
+Recovery could perform the same operation multiple times. What if the operation is not idempotent? The transactional plugin **makes** it idempotent. For example, the plugin could log a unique id per operation, and use that id to query its status before retrying. Or just retry, when the operation is naturally idempotent.
+
+The beauty of **Caf.js** is that all this complexity is hidden in plugins, and application code just benefits from a more robust platform.

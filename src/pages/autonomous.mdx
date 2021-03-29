@@ -27,7 +27,7 @@ But to recreate a more desktop-like experience in the browser we need reliable b
 
 The critical part is the context switch between activities. We want to convince the user that background tasks are running in the phone, but they are not, they are running in the Cloud. When we swap a visible *iframe* of one activity by another one, we need to show progress, and the transition needs to be smooth.
 
-In **Caf.js** cloud-based multi-tasking is implemented by some trickery in the [Launcher](https://github.com/cafjs/caf_launcher.git) app, and enabling proactive server side rendering in most of our apps. We describe this technique below.
+In **Caf.js** cloud-based multi-tasking is implemented by some trickery in the [Launcher](https://github.com/cafjs/caf_launcher.git) app, and enabling **proactive server side rendering** in most of our apps. We describe this technique below.
 
 #### Continuous GraphQL Queries
 
@@ -66,8 +66,8 @@ Why PSSR? Manage a cache inside the network of a 5G mobile provider (AWS Wavelen
 A cloud assistant is made autonomous by implementing the `__ca_pulse__` method.
 This method will be called periodically by the framework.
 
-Notifications are created  by the `session` plugin. When the client is offline notifications are queued in the cloud. A cloud assistant can have multiple notification queues, identified by names chosen by the client. This allows stirring some notifications to a particular client device. Notification queues are managed by application code to avoid running out of memory.
+Notifications are created with the `session` plugin. When clients are offline, notifications queue in the Cloud. Queues are managed by application code to avoid running out of memory. When a client connects, notifications are delivered in real-time using a web socket.
 
- The client library combines a request-response style with message events triggered by notifications. A new session can specify a name to target a particular notification queue.
+A cloud assistant can have multiple notification queues, identified by names chosen by the client. This allows stirring notifications to a particular client device, or swapping devices without losing notifications.
 
-See the documentation and examples for more info.
+ The client library combines a request-response style with events triggered by notifications. A new session targets a particular notification queue by providing its name.

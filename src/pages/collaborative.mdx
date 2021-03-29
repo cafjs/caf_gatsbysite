@@ -1,0 +1,46 @@
+---
+title: Collaborative Multi-tenancy
+---
+## Collaborative Multi-tenancy
+
+Multi-tenancy is kind of boring. Isolate your customers. Ensure a fair distribution of resources among them. Done.
+
+But when we add the word **collaborative** everything changes. Bootstrap trust between strangers. Help them to communicate and share. The success of many apps depends on getting this right.
+
+How to bootstrap trust? Repeatability and control. With repeatability we can link interactions over time to build a reputation. With control we create a safe environment that encourages risk-taking.
+
+**Caf.js** provides repeatibility and control for your app with a **Trusted Bus**. The **Trusted Bus** mediates interactions between Cloud Assistants (CAs), authenticating requests, and enforcing your access control policy.
+
+**Caf.js** implements high level communication services on top of the **Trusted Bus**. For example, supporting a publish-subscribe model, or replicating data with distributed data structures.
+
+CAs access communication services with **transactional plugins**. They see replicated data as read-only, internal state. This leads to a simpler programming model, which recovers from failures transparently.
+
+Let's describe a use case, and then we dig into the details.
+
+<hr/>
+
+#### Worldwide coordination of device actions
+
+*Warning: do not use **Caf.js** for safety critical applications.*
+
+Bring your own gadget. Register it with the app to create its **reverse service worker** (see the *Permanent Presence* section). Decide who can access it. Choose the tags your device subscribes to. Every time one of your friends posts an action using one of these tags your gadget will respond.
+
+And here comes the fun part. Gadgets can trigger actions based on Coordinated Universal Time (UTC), not just when the action arrives. An action could also contain a sequence of sub-actions, spaced in time. And the **Caf.js** client library helps gadgets to synchronize clocks with the Cloud.
+
+This means that, given a second or two for propagation, we can synchronize actions, within a hundred milliseconds of each other, on hundreds of thousands of devices across the world. And soon it will be millions.
+
+Your next Zoom party will never be the same.
+
+Access policy is based on groups. Groups with membership that other people can help you to maintain by enabling delegation. Groups implemented with distributed data structures to provide scale and instant revocation.
+
+All posts are not created by humans. See the **autonomous compute** section to learn how to inject posts with continuous queries.
+
+And not all endpoints are gadgets. A **reverse service worker** can also represent other app instances or services. Coordination is not only for the physical world.
+
+The [TweetIoT](https://github.com/cafjs/caf_tweetiot.git) app puts all these ideas to practice. Hashtags in posts trigger gadget actions. Maintain membership with group delegation.  The remarkable part is that the Cloud backend is only **154 lines of JavaScript**.
+
+<hr/>
+
+A CA is implicitly created the first time its owner access it. Creation starts a subscription payed by the owner, and needs proper authentication.
+
+The name of a CA is always scoped by its owner's name, simplifying security mechanisms.
