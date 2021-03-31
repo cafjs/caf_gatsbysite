@@ -10,7 +10,7 @@ But what about the rest of the world? Services, clients, or devices that need in
 And connectivity is not always symmetric. Most IoT devices are not directly exposed to the Internet, otherwise they would be hacked in an hour.
 This makes remote interaction with devices even more difficult.
 
-**Caf.js** makes devices and web app instances always accessible from anywhere at any time. An abstraction that we call **reverse service worker** keeps them safe. A **three-way isomorphic** framework enables quick prototyping of new sharing experiences.
+**Caf.js** makes devices and web app instances always accessible from anywhere at any time. An abstraction that we call **Reverse Service Worker (RSW)** keeps them safe. A **three-way isomorphic** framework enables quick prototyping of new sharing experiences.
 
 Let's look at a few use cases first, and describe the technology after that.
 
@@ -64,7 +64,7 @@ RSWs have two modes of operation:
 
 ##### 1. Pass-through mode
 
-An endpoint, for example, a device or app instance, connects to an RSW using a web socket. The RSW receives API requests from the Internet, performs security checks, updates its state, and then notifies the connected endpoint, or other client using web sockets. These notifications can then trigger actions in the physical world, or keep other user interfaces in sync.
+An endpoint, for example, a device or app instance, connects to an RSW using a web socket. The RSW receives API requests from the Internet, performs security checks, updates its state, and then notifies the connected endpoint, or other clients connected with web sockets. These notifications can then trigger actions in the physical world, or keep other user interfaces in sync.
 
 Any Internet client with proper credentials can now, in real-time, trigger device actions or read its data. But clients never have direct access, credentials are short-lived signed tokens (JWT), access policy is centrally managed and consistent for all your devices, and, more importantly, the interface could just expose the minimal functionality required by your app.
 
