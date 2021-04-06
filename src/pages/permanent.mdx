@@ -10,9 +10,9 @@ But what about the rest of the world? Services, clients, or devices that need in
 And connectivity is not always symmetric. Most IoT devices are not directly exposed to the Internet, otherwise they would be hacked in an hour.
 This makes remote interaction with devices even more difficult.
 
-**Caf.js** makes devices and web app instances always accessible from anywhere at any time. An abstraction that we call **Reverse Service Worker (RSW)** keeps them safe. A **three-way isomorphic** framework enables quick prototyping of new sharing experiences.
+**Caf.js** makes devices and web app instances accessible from anywhere at any time. An abstraction that we call **Reverse Service Worker (RSW)** keeps them safe. A **three-way isomorphic** framework enables quick prototyping of new sharing experiences.
 
-Let's look at a few use cases first, and describe the technology after that.
+Let's look at a few use cases first, and then describe the technology.
 
 <hr/>
 
@@ -54,28 +54,30 @@ How are these experiences implemented with **Caf.js**? Let's start with a few ne
 
 Service workers enable offline experiences for Progressive Web Apps (PWAs). A service worker runs a custom script, in a separate context from the web page, to mediate network access and cache data. When connectivity is poor, it can pretend that the network is still working by fetching from a local cache or delaying sends.
 
-An RSW lives in the Cloud and has a dual role to a service worker in the browser. It mediates network requests from anywhere in the Internet that target one device or app instance.
+An RSW lives in the Cloud and has a dual role to a service worker in the browser. It mediates network requests from anywhere in the Internet to one device or app instance, i.e., its endpoint.
+
+RSWs are implemented with a **cloud assistant**, following the Actor Model, and thousands of them can run on one *node.js* process.
 
 Each RSW has an stable URL that provides a public name for the endpoint, some private state, a set of methods that can be called remotely, and a managed security policy that restricts who can call them.
-
-RSWs are implemented with a **cloud assistant**, following the Actor Model, and thousands of them can run on one node.js process.
 
 RSWs have two modes of operation:
 
 ##### 1. Pass-through mode
 
-An endpoint, for example, a device or app instance, connects to an RSW using a web socket. The RSW receives API requests from the Internet, performs security checks, updates its state, and then notifies the connected endpoint, or other clients connected with web sockets. These notifications can then trigger actions in the physical world, or keep other user interfaces in sync.
+In this mode an endpoint is always connected to its RSW with a web socket.
 
-Any Internet client with proper credentials can now, in real-time, trigger device actions or read its data. But clients never have direct access, credentials are short-lived signed tokens (JWT), access policy is centrally managed and consistent for all your devices, and, more importantly, the interface could just expose the minimal functionality required by your app.
+When this RSW receives a request, it performs security checks, updates its state, and notifies the endpoint, and other clients, using web sockets. Notifications can then trigger actions in the physical world, or keep other user interfaces in sync.
+
+Clients never have direct access to endpoints. They use short-lived signed credentials (JWT). The access policy is centrally managed and consistent for all your devices. More importantly, the RSW could expose the minimal functionality required by your app, keeping the endpoint safe.
 
 
 ##### 2. Impersonation mode
 
 What happens when the endpoint is not connected? The RSW **pretends** to be the endpoint, making decisions on its behalf based on local state, and helping the rest of the world to move forward.
 
-RSWs typically implement both modes, switching between them based on endpoint connectivity. For example, it could start in impersonation mode, negotiate some actions, and then relay those actions in pass-through mode when the endpoint eventually connects.
+Most RSWs implement both modes, switching between them based on endpoint connectivity. For example, an RSW could start in impersonation mode, negotiate some actions, and then relay these actions in pass-through mode when the endpoint eventually connects.
 
-What if local device actions, taken while offline, are incompatible with actions proposed by the RSW? The answer is very application dependent, but a simple approach is to route actions through the RSW, and only perform emergency local actions when offline.
+What if offline endpoint actions are incompatible with actions negotiated by the RSW? Action reconciliation can be complex and application dependent. A simple strategy to avoid inconsistencies is to route all actions through the RSW when online, and only perform emergency, or read-only, actions when offline.
 
 #### Three-way Isomorphic
 

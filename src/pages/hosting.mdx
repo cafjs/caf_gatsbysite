@@ -15,7 +15,7 @@ We flex resources based on the number of subscribed customers, manage payment, t
 
 With *profit-as-you-go*, you know exactly how much profit an extra subscriber gives you. Similar to an app store, but flexing and managing your complex backend.
 
-#### You are in Control
+#### You Are in Control
 
 You decide what percentage of the revenue will be profit. From zero, or even negative, to ninety per cent.
 
@@ -23,17 +23,17 @@ What we make is not based on what you make. What we make is based on the infrast
 
 We don't care what you do in your app, as long as it is legal. You can run your own in-app purchase infrastructure. Or link to your website to manage subscriptions. Or make money from adds.
 
-In fact, we anticipate that many developers will make their apps "free", by paying infrastucture costs themselves, and use other mechanisms to monetize their apps.
+In fact, we anticipate that many developers will make their apps "free", by paying infrastructure costs themselves, and use other mechanisms to monetize their apps.
 
-And you can decide what incremental resources are added for a newly subscribed customer. We give you feedback on whether you are wasting resouces, or starving your app. But whether to change the plan is up to you, and you can change it at anytime.
+And you can decide what incremental resources are added for a newly subscribed customer. We give you feedback on whether you are wasting resources, or starving your app. But whether to change the plan is up to you, and you can change it at anytime.
 
 #### Domain-Specific PaaS
 
-Every second, a busy cloud assistant uses less than one millisecond of compute, and checkpoints less than 500 bytes of state. The memory footprint increases by 200 KB, and we allocate 1.75 GB of extra egress traffic per year. This is our *Gold Plan*.
+Every second, a busy cloud assistant uses less than one millisecond of compute, and checkpoints less than 500 bytes of state. A new cloud assistant increases the memory footprint by 200 KB, and allocates 1.75 GB of extra egress traffic per year. This is our *Gold Plan*.
 
 Assume a DIY hosting of this cloud assistant. How much does it cost per year in the Google Cloud?
 
-A serverless platform like *Google Cloud Run* would cost $88/year (CPU: 31536000 invocations\*0.1\*$0.00002400, Request: 31.536\*$0.4), and a fast database for checkpointing, such as Cloud Firestore costs $56/year (315.36 writes\*$0.18). A total of **$144 per year**, and that ignores networking costs.
+A serverless platform like *Google Cloud Run* would cost $88/year (CPU+request for 31,536K invocations: 31536\*0.1\*$0.024+ 31.536\*$0.4), and a fast database for checkpointing, such as *Google Cloud Firestore*, costs $56/year (writes: 315.36\*$0.18). A total of **$144 per year**, and that ignores networking costs.
 
 What is the price of our *Gold Plan*? **$0.85 per year**
 
@@ -41,17 +41,17 @@ Yep, this is not a typo. It is two orders of magnitude cheaper.
 
 How can this be possible?
 
-We built a **Domain-Specific PaaS** on top of Kubernetes for running **Caf.js** apps, and nothing else. We make strong assumptions on how these apps behave, and that simplifies the problem. By designing the framework and the runtime together, we can optimize beyond what is possible today in a general-purpose platform.
+We built a **Domain-Specific PaaS** on top of Kubernetes for running **Caf.js** apps, and nothing else. We made strong assumptions on how these apps behave, and that simplified the problem. By designing the framework and the runtime together, we can optimize beyond what is possible today in a general-purpose platform.
 
 #### Getting Started
 
-You can sign up for the beta service [Here](https://root-launcher.cafjs.com), with no credit card, and we will give you a few units to get started.
+You can sign up for the beta service [here](https://root-launcher.cafjs.com), with no credit card, and we will give you a few units to get started.
 
-When you deploy your app using **Turtles**, it always starts in **Incubator** mode. In that mode resources are minimal, but they will grow when other users subscribe to your app.
+When you deploy your app using **Turtles**, it starts in **Incubator** mode. In that mode resources are minimal, but they will grow when other users subscribe to your app.
 
 The **Incubator** mode enables a very low maintenance cost for your new app. Currently less than **$6 per year** (one unit a week).
 
-This means that with the free units, you could keep your app running for several weeks. If during that time a few people subscribe, you could achieve orbital velocity, paying baseline costs with subscriptions, and then keep growing...
+With the free units you could keep your app running for several weeks. If during that time a few people subscribe, you could achieve orbital velocity, paying baseline costs with subscriptions, and then keep growing...
 
 A kid in Nigeria, with no bank account or credit card, can bootstrap a very profitable business with no upfront investment, purely based on talent. And units are transferable, with a reasonably safe mechanism to exchange them for real money using any peer-to-peer payment system.
 

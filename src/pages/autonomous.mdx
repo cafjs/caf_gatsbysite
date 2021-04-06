@@ -5,7 +5,9 @@ title: Autonomous Computation
 
 The Web was built with a request-response model. Servers were expensive and slow, and that model was a very good fit for the compute resources available at the time.
 
-Many years later, and now we live in the land of milk and honey in terms of compute resources. What else can we do with all that power?
+Many years later, and now we live in the land of milk and honey in terms of compute resources.
+
+What else can we do with all that power?
 
 One obvious candidate is to enable web clients to launch long term activities in the Cloud, where long term could mean years. These activities could be a good complement to a request-response model. For example, they could warn you, or take some action, if something critical to you has happened on the Web. And that would not be spam, after all you were the one setting up the continuous query.
 
@@ -35,9 +37,9 @@ Many front-ends configure React components with GraphQL queries and a request-re
 
 What happens when the configuration changes? The server could notify the client using a web socket, and then the client reloads. Or the client could repeat the query every so often.
 
-But we could do better. The previous approaches add latency and force unnecessary reloads. Instead, the client could install a continuous query in the Cloud and, when the configuration changes, receive a new configuration using a web socket. There is no false alarms, the server knows exactly what the client needs. There is no extra delay, the notification is the new configuration.
+But we can do better. The previous approaches add latency and force unnecessary reloads. Instead, the client could install a continuous query in the Cloud and, when the configuration changes, receive a new configuration from a web socket. There is no false alarms, the server knows exactly what the client needs. There is no extra delay, the notification is the new configuration.
 
-But we could do even better. The server could regularly interact with many external services to gather configuration data, and cache it locally. And now all the continuous GraphQL queries evaluate on local data, reused for the benefit of thousands of clients.
+But we can do even better. The server could regularly interact with many external services to gather configuration data, and cache it locally. And now all the continuous GraphQL queries evaluate on local data, reused for the benefit of thousands of clients.
 
 The [HelloGraphQL](https://github.com/cafjs/caf_hellographql.git) weather app is an example of these ideas. Clients obtain weather information by installing a continuous query in the Cloud. The backend periodically polls the *OpenWeather* API. Queries evaluate on local data. When the weather changes, a registered IoT device gets a notification.
 
@@ -58,16 +60,20 @@ Two simple optimizations make PSSR practical:
 
 With PSSR a page request is first looked up in a cache close by. If found, the html page is displayed, and then it continues with hydration, similar to SSR. If missing, the request is forwarded to the server.
 
-Why PSSR? Manage a cache inside the network of a 5G mobile provider (AWS Wavelength), and 5G clients will load a page instantly, in low tens of milliseconds. No differences between static and dynamic content. And with much less complexity than distributed rendering.
+Why PSSR? Manage a cache inside the network of a 5G mobile provider with, for example, *AWS Wavelength*, and 5G clients will load a page instantly, in low tens of milliseconds. No differences between static and dynamic content. And with much less complexity than distributed rendering.
 
 
-#### Pulse Requests and Notifications
+#### Pulse Requests
 
 A cloud assistant is made autonomous by implementing the `__ca_pulse__` method.
 This method will be called periodically by the framework.
 
-Notifications are created with the `session` plugin. When clients are offline, notifications queue in the Cloud. Queues are managed by application code to avoid running out of memory. When a client connects, notifications are delivered in real-time using a web socket.
+#### Notifications
 
-A cloud assistant can have multiple notification queues, identified by names chosen by the client. This allows stirring notifications to a particular client device, or swapping devices without losing notifications.
+The client library combines a request-response style with events triggered by notifications. Notifications are created in the Cloud with the `session` plugin.
 
- The client library combines a request-response style with events triggered by notifications. A new session targets a particular notification queue by providing its name.
+When clients are offline, the notifications created by autonomous computations queue in the Cloud. Queues are managed by application code to avoid running out of memory.
+
+When a client connects, notifications are delivered in real-time using a web socket.
+
+A cloud assistant can have multiple notification queues, identified by names chosen by its clients. This allows stirring notifications to a client device, or swapping devices without losing notifications, since now a client session can target a particular queue.
