@@ -1,9 +1,11 @@
 ---
 title: Collaborative Multi-tenancy
 ---
+import {Link} from 'gatsby'
+
 ## Collaborative Multi-tenancy
 
-Multi-tenancy is kind of boring. Isolate your customers. Ensure a fair distribution of resources among them. Done.
+![GATSBY_EMPTY_ALT](../images/samuel-sianipar-scUBcasSvbE-unsplash.jpg)Multi-tenancy is kind of boring. Isolate your customers. Ensure a fair distribution of resources among them. Done.
 
 But when we add the word **collaborative** everything changes. Bootstrap trust between strangers. Help them to communicate and share. The success of many apps depends on getting this right.
 
@@ -13,7 +15,7 @@ How to bootstrap trust? Repeatability and control. With repeatability we can lin
 
 **Caf.js** implements high level communication services on top of the **Trusted Bus**. For example, to support a publish-subscribe model, or replicate data with Distributed Data Structures (DDS).
 
-CAs access communication services with **transactional plugins**. They see replicated data as read-only, internal state. This leads to a simpler programming model, which recovers from failures transparently. See the *Orchestration* section for details.
+CAs access communication services with **transactional plugins**. They see replicated data as read-only, internal state. This leads to a simpler programming model, which recovers from failures transparently. See the <Link to="/orchestration">Service Orchestration</Link> section for details.
 
 Let's describe a use case, and then we dig into the details.
 
@@ -23,7 +25,7 @@ Let's describe a use case, and then we dig into the details.
 
 *Warning: do not use **Caf.js** for safety critical applications.*
 
-Bring your own gadget. Register it with the app to create a **reverse service worker** (see the *Permanent Presence* section). Decide who can access it. Choose the tags your device subscribes to. Every time one of your friends posts an action using one of these tags your gadget will respond.
+Bring your own gadget. Register it with the app to create a **reverse service worker** (see the <Link to="/permanent">Permanent Presence</Link> section). Decide who can access it. Choose the tags your device subscribes to. Every time one of your friends posts an action using one of these tags your gadget will respond.
 
 And here comes the fun part. Gadgets can start actions based on Coordinated Universal Time (UTC), not just when the action arrives. An action could also contain a sequence of sub-actions, spaced in time. And the **Caf.js** client library helps gadgets to synchronize clocks with the Cloud.
 
@@ -31,7 +33,7 @@ This means that, given a second or two for propagation, we can **synchronize** a
 
 Your next Zoom party will never be the same.
 
-Moreover, not all posts are created by humans. See the **autonomous compute** section to learn how to inject posts with continuous queries.
+Moreover, not all posts are created by humans. See the <Link to="/autonomous">Autonomous Compute</Link> section to learn how to inject posts with continuous queries.
 
 And not all endpoints are gadgets. A **reverse service worker** can also represent other app instances or services. Coordination is not only for the physical world.
 

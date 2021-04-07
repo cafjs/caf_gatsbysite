@@ -22,18 +22,34 @@ module.exports = {
                 }
             }
         },
+        `gatsby-plugin-fontawesome-css`,
+        `gatsby-plugin-sass`,
+        `gatsby-plugin-sharp`,
+        `gatsby-transformer-sharp`,
         {
             resolve: `gatsby-plugin-mdx`,
             options: {
+
+                extensions: [`.mdx`, `.md`],
+                gatsbyRemarkPlugins: [
+                    {
+                        resolve: `gatsby-remark-images`,
+                        options: {
+                            backgroundColor: "none",
+                            disableBgImage: true,
+                            linkImagesToOriginal: false,
+                            wrapperStyle: fluidResult => {
+//                                console.log(fluidResult);
+                                return `width: 272px;`;
+                            }
+                        },
+                    }
+                ],
                 defaultLayouts: {
 
                     default: require.resolve("./src/components/layoutMDX.js"),
                 }
             }
-        },
-        `gatsby-plugin-fontawesome-css`,
-        `gatsby-plugin-sass`,
-        `gatsby-transformer-sharp`,
-        `gatsby-plugin-sharp`
-  ]
+        }
+    ]
 };

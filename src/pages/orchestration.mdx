@@ -1,9 +1,11 @@
 ---
 title: Reliable Service Orchestration
 ---
+import {Link} from 'gatsby'
+
 ## Reliable Service Orchestration
 
-A typical Cloud Assistant (CA) has kilobytes of private state, carefully managed to be consistent with its external commitments, even after server failures.
+![GATSBY_EMPTY_ALT](../images/bill-oxford--fGqsewtsJY-unsplash.jpg)A typical Cloud Assistant (CA) has kilobytes of private state, carefully managed to be consistent with its external commitments, even after server failures.
 
 A stateful CA naturally implements a reliable orchestrator of interactions with external services.
 
@@ -42,7 +44,7 @@ What about sequencing API calls? A CA could provide an external method to trigge
 
 A CA is a **reliable state machine** for your API calls.
 
-And dynamic content loading? A CA can be made autonomous, as we described in another section, and prefetch content from multiple sources. Therefore, a consistent snapshot of the dynamic content can be loaded with one CA method call. Loading could be even faster with proactive server side rendering, described in the autonomous section.
+And dynamic content loading? An <Link to="/autonomous">autonomous</Link> CA periodically prefetches dynamic content from multiple sources, guaranteeing that a CA method call returns a consistent snapshot of this content. Loading could be even faster with proactive server side rendering, described in  <Link to="/autonomous">this</Link> section.
 
 A CA is a **caching reverse proxy** for dynamic content.
 
