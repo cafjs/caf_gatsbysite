@@ -27,11 +27,11 @@ Bring your own gadget. Register it with the app to create a **reverse service wo
 
 And here comes the fun part. Gadgets can start actions based on Coordinated Universal Time (UTC), not just when the action arrives. An action could also contain a sequence of sub-actions, spaced in time. And the **Caf.js** client library helps gadgets to synchronize clocks with the Cloud.
 
-This means that, given a second or two for propagation, we can synchronize actions, within a hundred milliseconds of each other, on hundreds of thousands of devices across the world. And soon it will be millions.
+This means that, given a second or two for propagation, we can **synchronize** actions, within a hundred milliseconds of each other, on **hundreds of thousands of devices across the world**. And soon it will be millions.
 
 Your next Zoom party will never be the same.
 
-All posts are not created by humans. See the **autonomous compute** section to learn how to inject posts with continuous queries.
+Moreover, not all posts are created by humans. See the **autonomous compute** section to learn how to inject posts with continuous queries.
 
 And not all endpoints are gadgets. A **reverse service worker** can also represent other app instances or services. Coordination is not only for the physical world.
 
@@ -65,9 +65,9 @@ A **SharedMap** provides a safe mechanism to dynamically update code and data ev
 
 #### Publish-Subscribe
 
-This implementation supports two kinds of topics:
+Our implementation supports two kinds of topics:
 
-1. **Private**: similar to a blog, there is only one CA that can publish messages, but anybody can subscribe to receive them.
+1. **Private**: similar to a blog. There is only one CA that can publish messages, but anybody can subscribe to receive them.
 2. **Forum**: anybody can publish or subscribe, but subscribers can filter publishers by setting **Trusted Bus** policies.
 
 **SharedMap** and **Publish-Subscribe** complement each other well. The former provides cheap, silent updates to many CAs. The latter triggers an action on each subscribed CA, and this is more expensive, but needed for external interaction.

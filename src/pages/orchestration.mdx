@@ -22,7 +22,7 @@ High performance front-ends are moving to a new architecture, exemplified by *JA
 
 These sites are not always static. For example, *Gatsby* creates React components that will be hydrated when the page loads. And after that a *Gatsby* site becomes a web app.
 
-What is the weakness of this clean architecture? You can ended up with many external APIs. For sending an e-mail, loading dynamic content, paying a bill, authenticating a user, shipping something, storing user settings,... And they could come from different providers, requiring different API credentials.
+What is the weakness of this clean architecture? Too many external APIs. For sending an e-mail, loading dynamic content, paying a bill, authenticating a user, shipping something, storing user settings,... And they could come from different providers, requiring different API credentials.
 
 And where do all these credentials end up? In the browser. And with a new wave of security hardware bugs, there is no place to hide in the browser. Heroic attempts like *site isolation* are complex, inefficient, and not universally supported. These credentials are gone...
 
@@ -42,11 +42,11 @@ What about sequencing API calls? A CA could provide an external method to trigge
 
 A CA is a **reliable state machine** for your API calls.
 
-And dynamic content loading? A CA can be made autonomous, as we described in another section, and prefetch content from multiple sources. Then, a consistent snapshot of the dynamic content can be loaded with one CA method call. Loading could be even faster with proactive server side rendering, described in the autonomous section.
+And dynamic content loading? A CA can be made autonomous, as we described in another section, and prefetch content from multiple sources. Therefore, a consistent snapshot of the dynamic content can be loaded with one CA method call. Loading could be even faster with proactive server side rendering, described in the autonomous section.
 
 A CA is a **caching reverse proxy** for dynamic content.
 
-See the [HelloPayPal](https://github.com/cafjs/caf_hellopaypal.git) app for an implemention based on these ideas of a reliable PayPal checkout.
+See the [HelloPayPal](https://github.com/cafjs/caf_hellopaypal.git) app for an implementation of a reliable PayPal checkout based on these ideas.
 
 <hr/>
 
@@ -60,7 +60,7 @@ There is never more than one active CA with a given name, making serialization a
 
 CAs are **transactional actors**. Each request creates a transaction that modifies internal state when it commits, or rolls back changes when it returns an application error or throws an exception.
 
-A CA checkpoints to a Redis instance **before** commiting a transaction. It externalizes state changes **after** the transaction commits, i.e., after Redis makes the checkpoint stable. Therefore, it can recover from a failure and the world will never notice.
+A CA checkpoints to a Redis instance **before** committing a transaction. It externalizes state changes **after** the transaction commits, i.e., after Redis makes the checkpoint stable. Therefore, it can recover from a failure and the world will never notice.
 
 How does **Caf.js** delay externalization? It uses **transactional plugins** to mediate external interactions. Invoking a plugin method just appends to a log the intent of performing an operation. If there are no errors, both the plugin logs and the state changes are checkpointed together. After the checkpoint finishes, the transaction is assumed to be committed, and then the "real" plugin methods are invoked, making the changes externally visible.
 
