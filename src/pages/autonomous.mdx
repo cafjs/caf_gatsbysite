@@ -1,6 +1,8 @@
 ---
 title: Autonomous Computation
 ---
+import {Link} from 'gatsby'
+
 ## Autonomous Computation
 
 ![GATSBY_EMPTY_ALT](../images/randy-fath-KyreMg96fuA-unsplash.jpg)The Web was built with a request-response model. Servers were expensive and slow, and that model was a very good fit for the compute resources available at the time.
@@ -9,11 +11,11 @@ Many years later, and now we live in the land of milk and honey in terms of comp
 
 What else can we do with all that power?
 
-One obvious candidate is to enable web clients to launch long term activities in the Cloud, where long term could mean years. These activities could be a good complement to a request-response model. For example, they could warn you, or take some action, if something critical to you has happened on the Web. And that would not be spam, after all you were the one setting up the continuous query.
+One obvious candidate is to enable web clients to launch long term activities in the Cloud, where long term could mean years. These activities are a good complement to a request-response model. For example, they could warn you, or take some action, if something critical to you has happened on the Web. And that would not be spam, after all you were the one setting up the continuous query.
 
 It is unreasonable to assume that anybody should be able to launch an **arbitrary** activity in any site. Someone has to pay for it. Denial of service becomes trivial. Running untrusted code is unsafe. We need a bit more structure to make it happen.
 
-And that's when **Caf.js** comes into play. Make it easier to write applications that create **specific** long-term activities on behalf of subscribed customers. As long as the end customer maintains the app subscription, the activities continue. The application guarantees that end customers do not abuse the system. The platform provider hosting the app (could be us!) ultimately guarantees that the app does not abuse the system.
+And that's when **Caf.js** comes into play. Make it easier to write applications that create **specific** long-term activities on behalf of subscribed customers. As long as the end customer maintains the app subscription, the activities continue. The application guarantees that end customers do not abuse the system. The platform provider hosting the app (could be <Link to="/hosting">us!</Link>) ultimately guarantees that the app does not abuse the system.
 
 <hr/>
 
@@ -76,4 +78,4 @@ When clients are offline, the notifications created by autonomous computations q
 
 When a client connects, notifications are delivered in real-time using a web socket.
 
-A cloud assistant can have multiple notification queues, identified by names chosen by its clients. This allows stirring notifications to a client device, or swapping devices without losing notifications, since now a client session can target a particular queue.
+A cloud assistant can have multiple notification queues, identified by names chosen by its clients. This allows stirring notifications to a client device, or swapping devices without losing notifications. A client session can always target a particular queue.

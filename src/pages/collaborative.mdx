@@ -51,7 +51,7 @@ When a request reaches a bus endpoint, a check ensures that the request owner is
 
 Decentralized authorization systems, such as SDSI, inspired our access control policies. Each owner maintains a local namespace, mapping names to principals. When several principals have the same local name, they form a group. Policy associates methods with allowed principals, or groups of allowed principals.
 
-Names can also refer to local names in other namespaces, delegating the task of maintaining group membership to other owners. These owners could further delegate to other owners. However, trust is not a transitive property, and delegation chains tend to be short.
+Names can also refer to local names in other namespaces, delegating the task of maintaining group membership to other owners. These owners could further delegate to other owners. However, trust is not a transitive property, as Facebook users learnt in the hard way, and delegation chains tend to be short.
 
 CAs use **SharedMaps**, described next, to represent groups. Group updates propagate in milliseconds. The security library handles link traversal between **SharedMaps** to implement delegation.
 
