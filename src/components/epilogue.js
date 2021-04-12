@@ -13,7 +13,7 @@ const Epilogue = ({ heading, intro, nextPage}) => {
 	      <h1 className="text-white mb-3">{heading}</h1>
 	      <div className="section-intro text-white mb-3 single-col-max mx-auto">{intro}</div>
               <div className="pt-3 text-center">
-                <Link to={nextPage} className="bt btn-light p-3"> Learn more → </Link>
+                <Link to={nextPage} className="bt btn-light p-3"> Caf.js Cloud → </Link>
 	      </div>
 	    </Container>
         </div>

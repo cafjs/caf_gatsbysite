@@ -15,6 +15,13 @@ module.exports = {
             }
         },
         {
+            resolve: `gatsby-source-filesystem`,
+            options: {
+                name: `docs`,
+                path: `${__dirname}/src/pages/docs`
+            }
+        },
+        {
             resolve: "gatsby-plugin-react-svg",
             options: {
                 rule: {
@@ -43,11 +50,17 @@ module.exports = {
                                 return `width: 272px;`;
                             }
                         },
+                    },
+                    {
+                        resolve: `gatsby-remark-prismjs`,
+                        options: {
+                        },
                     }
+
                 ],
                 defaultLayouts: {
-
-                    default: require.resolve("./src/components/layoutMDX.js"),
+                    docs: require.resolve("./src/components/layoutDocsMDX.js"),
+                    default: require.resolve("./src/components/layoutMDX.js")
                 }
             }
         }

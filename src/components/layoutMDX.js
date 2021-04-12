@@ -16,7 +16,7 @@ const LayoutMDX = ({ children, pageInfo }) => {
 
     return (
       <>
-        <Header siteTitle={data.site.siteMetadata.title} />
+        <Header siteTitle={data.site.siteMetadata.title}  isDocs={false} />
         <main><div className="mdx-article docs-page">{children}</div></main>
         <footer>
           <div className='footer-bottom text-center py-5'>
