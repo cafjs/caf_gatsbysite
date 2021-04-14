@@ -417,9 +417,8 @@ a.theme-link {
 }
 
 .apis-iframe {
-    position: absolute !important;
-    height: 85% !important;
-    width: 95% !important;
+    height: calc(100vh - 76px) !important;
+    width: inherit !important;
     border: 0 !important;
     margin: 0 auto;
 }

@@ -4,7 +4,7 @@ import {Container} from 'react-bootstrap';
 const APIsContent = ({children}) => {
     return (
         <>
-          <div className="docs-content">
+          <div className="apis-content">
             <Container fluid>{children}</Container>
           </div>
         </>

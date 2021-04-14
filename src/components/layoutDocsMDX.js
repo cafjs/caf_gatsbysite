@@ -1,5 +1,5 @@
 import React from 'react';
-import { useStaticQuery, graphql } from 'gatsby';
+import { useStaticQuery, graphql, Link} from 'gatsby';
 import { MDXProvider } from "@mdx-js/react";
 
 import Header from './header';
@@ -16,7 +16,8 @@ const h2 = ({children}) => (
     <h2 className="section-heading">{children}</h2>
 );
 
-const docsLayout = {DocsSidebar, DocsContent, DocsArticle, DocsSection, h1, h2};
+const docsLayout = {DocsSidebar, DocsContent, DocsArticle, DocsSection, Link,
+                    h1, h2};
 
 const LayoutDocsMDX = ({ children, pageInfo }) => {
     const data = useStaticQuery(graphql`

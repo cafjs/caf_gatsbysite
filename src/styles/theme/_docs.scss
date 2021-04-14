@@ -238,6 +238,9 @@
 	padding-bottom: 500px;
 }
 
+.apis-content {
+    margin-left: 300px;
+}
 
 .docs-article {
 	padding: 2rem;
@@ -434,7 +437,10 @@
 @media (max-width: 1199.98px) {
 	.docs-content {
 	    margin-left: 0;
-    }
+        }
+        .apis-content {
+            margin-left: 0;
+        }
     .docs-article .docs-time {
 	    position: static;
 	    display: block;

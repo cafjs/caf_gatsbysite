@@ -10,10 +10,12 @@ import {
 const MIN_WIDTH = 1200;
 
 const APIsSidebar = () => {
+    const [visible, setVisible] = useState(false);
 
-    const defaultVisible = (typeof window !== 'undefined') &&
-          (window.innerWidth >= MIN_WIDTH);
-    const [visible, setVisible] = useState(defaultVisible);
+    // need to delay when the sidebar was visible to trigger a transition
+    useEffect(() => {
+        setVisible(window.innerWidth >= MIN_WIDTH);
+    }, []); // Call just once
 
     useEffect(() => {
         if (typeof window === 'undefined') {
@@ -52,7 +54,7 @@ const APIsSidebar = () => {
             <Nav id="apis-nav" className="docs-nav navbar" onSelect={handleSelect}>
               <ul className="section-items list-unstyled nav flex-column pb-3">
 	        <Nav.Item className="section-title">
-                  <Nav.Link className="scrollto" href="#main"><FontAwesomeIcon className="fa-fw" icon={faArrowCircleUp}/> Main</Nav.Link>
+                  <Nav.Link className="scrollto"><FontAwesomeIcon className="fa-fw" icon={faArrowCircleUp}/> Main</Nav.Link>
                 </Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#caf_components">caf_components</Nav.Link></Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#caf_ca">caf_ca</Nav.Link></Nav.Item>
@@ -70,7 +72,7 @@ const APIsSidebar = () => {
                 <Nav.Item><Nav.Link className="scrollto" href="#caf_crossapp">caf_crossapp</Nav.Link></Nav.Item>
 
                 <Nav.Item className="nav-item section-title mt-3">
-                  <Nav.Link className="scrollto" href="#extra"><FontAwesomeIcon className="fa-fw" icon={faPlusCircle}/> Extra</Nav.Link>
+                  <Nav.Link className="scrollto"><FontAwesomeIcon className="fa-fw" icon={faPlusCircle}/> Extra</Nav.Link>
                 </Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#caf_react">caf_react</Nav.Link></Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#caf_sms">caf_sms</Nav.Link></Nav.Item>
@@ -85,7 +87,7 @@ const APIsSidebar = () => {
                 <Nav.Item><Nav.Link className="scrollto" href="#caf_rpi_gpio">caf_rpi_gpio</Nav.Link></Nav.Item>
 
                 <Nav.Item className="nav-item section-title mt-3">
-                  <Nav.Link className="scrollto" href="#tools"><FontAwesomeIcon className="fa-fw" icon={faWrench}/> Tools</Nav.Link>
+                  <Nav.Link className="scrollto"><FontAwesomeIcon className="fa-fw" icon={faWrench}/> Tools</Nav.Link>
                 </Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#caf_dcinabox">caf_dcinabox</Nav.Link></Nav.Item>
 
