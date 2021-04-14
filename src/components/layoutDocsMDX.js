@@ -9,8 +9,6 @@ import DocsContent from './docsContent';
 import DocsArticle from './docsArticle';
 import DocsSection from './docsSection';
 
-const JS_MIN = 100;
-
 const h1 = ({children}) => (
     <h1 className="docs-heading">{children}</h1>
 );

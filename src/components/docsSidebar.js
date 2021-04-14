@@ -1,11 +1,21 @@
 import React, { useState, useEffect} from 'react';
 import {Nav} from "react-bootstrap";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+    faLightbulb,
+    faWrench,
+    faArrowCircleUp,
+    faBook,
+    faCog
+} from '@fortawesome/free-solid-svg-icons';
 
 const MIN_WIDTH = 1200;
 
 const DocsSidebar = () => {
 
-    const [visible, setVisible] = useState(true);
+    const defaultVisible = (typeof window !== 'undefined') &&
+          (window.innerWidth >= MIN_WIDTH);
+    const [visible, setVisible] = useState(defaultVisible);
 
     useEffect(() => {
         if (typeof window === 'undefined') {
@@ -44,7 +54,7 @@ const DocsSidebar = () => {
             <Nav id="docs-nav" className="docs-nav navbar" onSelect={handleSelect}>
               <ul className="section-items list-unstyled nav flex-column pb-3">
 	        <Nav.Item className="section-title">
-                  <Nav.Link className="scrollto active" href="#getting-started">Getting Started</Nav.Link>
+                  <Nav.Link className="scrollto" href="#getting-started"><FontAwesomeIcon className="fa-fw" icon={faArrowCircleUp}/> Getting Started</Nav.Link>
                 </Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#install">Install</Nav.Link></Nav.Item>
 	        <Nav.Item><Nav.Link className="scrollto" href="#headless-example">Headless Example</Nav.Link></Nav.Item>
@@ -53,7 +63,7 @@ const DocsSidebar = () => {
                 <Nav.Item><Nav.Link className="scrollto" href="#three-way-isomorphic">Three-Way Iso</Nav.Link></Nav.Item>
 
                 <Nav.Item className="nav-item section-title mt-3">
-                  <Nav.Link className="scrollto" href="#concepts">Concepts</Nav.Link>
+                  <Nav.Link className="scrollto" href="#concepts"><FontAwesomeIcon className="fa-fw" icon={faLightbulb}/> Concepts</Nav.Link>
                 </Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#components">Components</Nav.Link></Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#cloud-assistant">Cloud Assistant</Nav.Link></Nav.Item>
@@ -65,15 +75,15 @@ const DocsSidebar = () => {
                 <Nav.Item><Nav.Link className="scrollto" href="#iot-device">IoT Device</Nav.Link></Nav.Item>
 
                 <Nav.Item className="nav-item section-title mt-3">
-                  <Nav.Link className="scrollto" href="#apis">APIs</Nav.Link>
+                  <Nav.Link className="scrollto" href="#apis"><FontAwesomeIcon className="fa-fw" icon={faCog}/> APIs</Nav.Link>
                 </Nav.Item>
 
                 <Nav.Item className="nav-item section-title mt-3">
-                  <Nav.Link className="scrollto" href="#tools">Tools</Nav.Link>
+                  <Nav.Link className="scrollto" href="#tools"><FontAwesomeIcon className="fa-fw" icon={faWrench}/> Tools</Nav.Link>
                 </Nav.Item>
 
                 <Nav.Item className="nav-item section-title mt-3">
-                  <Nav.Link className="scrollto" href="#resources">Resources</Nav.Link>
+                  <Nav.Link className="scrollto" href="#resources"><FontAwesomeIcon className="fa-fw" icon={faBook}/> Resources</Nav.Link>
                 </Nav.Item>
               </ul>
 	      </Nav>
