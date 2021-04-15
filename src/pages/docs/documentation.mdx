@@ -14,50 +14,88 @@ title: Documentation
 
 ## Install
 
-This repository is managed as a monorepo using Yarn workspaces. It contains a consistent snapshot of all the other `Caf.js` sub-projects, included as git submodules.
+#### Software Requirements
 
-Write your app in a subdirectory of `caf/playground/app`, and yarn workspaces will also manage your app dependencies. This is recommended because it guarantees that all your `Caf.js` dependencies have been tested together. Ditto with your modules under `caf/playground`, i.e., they are part of the workspace and do not need to be published during development.
+`node` >= 12 (LTS only), `yarn` >= 1.20, and `docker` >= 19.
 
+We rely on `yarn` workspaces, and `npm` does not support them yet.
 
-Install `node` >=10 and `yarn` >=1.3.2. Our development is mostly on Linux. Note that `npm` does not understand Yarn workspaces, you need to use `yarn`.
+Our development is mostly on Linux. Best platform for running `docker` containers.
 
-Clone this repository (`git clone https://github.com/cafjs/caf.git`) and update submodules:
+#### Download
+
+Clone the main repository
+
+```shell
+git clone https://github.com/cafjs/caf.git
+```
+
+Update submodules
+
 ```shell
     cd caf; git submodule update --init
 ```
-Install all the dependencies (it takes about 30s in my laptop):
+
+Install dependencies
+
 ```shell
     yarn run installAll
 ```
-add to your path the `cafjs` tool path:
+
+Add to your path the `cafjs` tool binary
+
 ```shell
     export PATH=<your_install_directory>/caf/bin:$PATH
 ```
-and now let's build and run locally a simple app:
+
+Download the latest `docker` images
+
+```shell
+   cafjs update
+```
+
+#### Test
+
+Let's build and run locally a simple app.
+
+
 ```shell
     cd apps/caf_helloworld; cafjs build; cafjs run helloworld
 ```
-The first call to `cafjs run` may take a few minutes because it downloads the core Docker images. If your connection is slow you may see timeout exceptions, which can be ignored because it continues with the download.
 
-The app server URL is http://root-launcher.vcap.me (DNS always resolves `*.vcap.me` to `127.0.0.1`, i.e., the local loop). With your browser, login with user `foo` and password `bar`, and then click the `+` icon to add a `helloworld` CA. A CA (Cloud Assistant) is a cloud proxy instance for your app. Fill the form as follows:
+With `docker ps` you should see seven running containers. They simulate the support services that we run in the Cloud.
 
-* Application publisher: `root`
-* Application name: `helloworld`
+The app launcher URL is http://root-launcher.vcap.me (DNS resolves `*.vcap.me` to `127.0.0.1`, the local loop). Using your browser, login with user `foo` and password `bar`. Then, with the top left menu, click the `+` icon to add a `helloworld` app instance.
+
+Fill the form with:
+
+* App publisher: `root` (in local mode apps are always published by `root`)
+* App name: `helloworld`
 * CA name: anything containing ASCII characters and numbers.
 
-and a `counter` example should appear. Use the `+` again to create other CAs, and then select the menu on the top left to switch between them.
+and a `counter` example should appear. Use the `+` again to create other instances, and then switch between them with the top left menu.
 
-To stop it, a single `Control-C` will initiate a gentle container shutdown but, for the impatient, a second `Control-C` will brute force a clean-up.
+To stop it, a single `Control-C` will initiate a gentle container shutdown but, for the impatient, a second `Control-C` will brute force a clean-up. Double tap.
 
-In both cases we should be able to restart without losing the CA's state. This state is checkpointed using a Redis container that mounts a host volume (log file in `/tmp/redis/appendonly.aof`, host port 6380). To start from scratch, delete the log file in the host.
+In both cases we should be able to restart without losing the previous state, since the Redis container generates a checkpoint file in the host `/tmp`. Delete this file to start from scratch:
 
-With the `cafjs` command we can also create apps from templates, simulate devices, build container images to publish in our cloud service, i.e., https://root-launcher.cafjs.com, or reset after a hang. See {@link external:caf_dcinabox} (https://cafjs.github.io/api/caf_dcinabox) for details.
+```shell
+sudo rm /tmp/redis/appendonly.aof
+```
 
 </DocsSection>
 
 <DocsSection id="headless-example">
 
 ## Headless Example
+
+This repository is managed as a monorepo using Yarn workspaces. It contains a consistent snapshot of all the other `Caf.js` sub-projects, included as git submodules.
+
+Write your app in a subdirectory of `caf/playground/app`, and yarn workspaces will also manage your app dependencies. This is recommended because it guarantees that all your `Caf.js` dependencies have been tested together. Ditto with your modules under `caf/playground`, i.e., they are part of the workspace and do not need to be published during development.
+
+
+With the `cafjs` command we can also create apps from templates, simulate devices, build container images to publish in our cloud service, i.e., https://root-launcher.cafjs.com, or reset after a hang. See {@link external:caf_dcinabox} (https://cafjs.github.io/api/caf_dcinabox) for details.
+
 
 </DocsSection>
 
