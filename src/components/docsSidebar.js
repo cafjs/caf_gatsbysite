@@ -59,7 +59,7 @@ const DocsSidebar = () => {
                   <Nav.Link className="scrollto" href="#getting-started"><FontAwesomeIcon className="fa-fw" icon={faArrowCircleUp}/> Getting Started</Nav.Link>
                 </Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#install">Install</Nav.Link></Nav.Item>
-	        <Nav.Item><Nav.Link className="scrollto" href="#headless-example">Headless Example</Nav.Link></Nav.Item>
+	        <Nav.Item><Nav.Link className="scrollto" href="#headless-example">First App</Nav.Link></Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#add-react-frontend">Add React Frontend</Nav.Link></Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#add-device">Add Device</Nav.Link></Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#three-way-isomorphic">Three-Way Iso</Nav.Link></Nav.Item>

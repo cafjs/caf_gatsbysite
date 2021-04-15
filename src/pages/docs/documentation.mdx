@@ -33,25 +33,25 @@ git clone https://github.com/cafjs/caf.git
 Update submodules
 
 ```shell
-    cd caf; git submodule update --init
+cd caf; git submodule update --init
 ```
 
 Install dependencies
 
 ```shell
-    yarn run installAll
+yarn run installAll
 ```
 
 Add to your path the `cafjs` tool binary
 
 ```shell
-    export PATH=<your_install_directory>/caf/bin:$PATH
+export PATH=<your_install_directory>/caf/bin:$PATH
 ```
 
 Download the latest `docker` images
 
 ```shell
-   cafjs update
+cafjs update
 ```
 
 #### Test
@@ -60,7 +60,7 @@ Let's build and run locally a simple app.
 
 
 ```shell
-    cd apps/caf_helloworld; cafjs build; cafjs run helloworld
+cd apps/caf_helloworld; cafjs build; cafjs run helloworld
 ```
 
 With `docker ps` you should see seven running containers. They simulate the support services that we run in the Cloud.
@@ -77,7 +77,7 @@ and a `counter` example should appear. Use the `+` again to create other instanc
 
 To stop it, a single `Control-C` will initiate a gentle container shutdown but, for the impatient, a second `Control-C` will brute force a clean-up. Double tap.
 
-In both cases we should be able to restart without losing the previous state, since the Redis container generates a checkpoint file in the host `/tmp`. Delete this file to start from scratch:
+In both cases we should be able to restart without losing the previous state, since the Redis container generates a checkpoint file in the host diretory `/tmp`. Delete this file to start from scratch:
 
 ```shell
 sudo rm /tmp/redis/appendonly.aof
@@ -87,9 +87,29 @@ sudo rm /tmp/redis/appendonly.aof
 
 <DocsSection id="headless-example">
 
-## Headless Example
+## Your First App
 
-This repository is managed as a monorepo using Yarn workspaces. It contains a consistent snapshot of all the other `Caf.js` sub-projects, included as git submodules.
+Let's create a simple app with no front end.
+
+*Caf.js* is managed as a monorepo using `yarn` workspaces. Anything under the sub-directory `caf/playground/app` becomes part of the workspace, and we will create the app there.
+
+Using a monorepo has many advantages, but the most important one is that you know what you are getting. When we create a release of *Caf.js* we freeze all our packages, and test them together. Your app will not suffer from semver mistakes due to these packages.
+
+To create the app skeleton we use `cafjs generate`, an application template generator. The default templates are in a Docker image, and it is easy to customize and share your templates by publishing a new image. See  <Link to="#tools">Tools</Link> for details.
+
+```shell
+cd playground; rm -r app;  cafjs generate myapp cloud ./app
+```
+
+and then install, build, and run. Install is only needed for the first build, to update dependencies in the monorepo.
+
+```shell
+cd app; cafjs install; cafjs build;  cafjs run -d myapp
+```
+
+This time we used the flag `-d` to turn on debugging mode. You should see debug logs in the console. It also opens the debug port `9229`, and you can set breakpoints, and inspect variables, with the Chrome browser developer tools (`chrome://inspect`).
+
+
 
 Write your app in a subdirectory of `caf/playground/app`, and yarn workspaces will also manage your app dependencies. This is recommended because it guarantees that all your `Caf.js` dependencies have been tested together. Ditto with your modules under `caf/playground`, i.e., they are part of the workspace and do not need to be published during development.
 
