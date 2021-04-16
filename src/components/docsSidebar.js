@@ -60,8 +60,10 @@ const DocsSidebar = () => {
                 </Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#install">Install</Nav.Link></Nav.Item>
 	        <Nav.Item><Nav.Link className="scrollto" href="#headless-example">First App</Nav.Link></Nav.Item>
-                <Nav.Item><Nav.Link className="scrollto" href="#add-react-frontend">Add React UI</Nav.Link></Nav.Item>
-                <Nav.Item><Nav.Link className="scrollto" href="#add-device">Add Device</Nav.Link></Nav.Item>
+            <Nav.Item><Nav.Link className="scrollto" href="#add-react-frontend">Add React UI</Nav.Link></Nav.Item>
+            <Nav.Item><Nav.Link className="scrollto" href="#cafjs-cloud">Caf.js Cloud</Nav.Link></Nav.Item>
+            <Nav.Item><Nav.Link className="scrollto" href="#add-device">Simulated Device</Nav.Link></Nav.Item>
+            <Nav.Item><Nav.Link className="scrollto" href="#raspberry-pi">Raspberry Pi</Nav.Link></Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#three-way-isomorphic">Three-Way Iso</Nav.Link></Nav.Item>
 
                 <Nav.Item className="nav-item section-title mt-3">

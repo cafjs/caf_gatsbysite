@@ -151,14 +151,103 @@ The code in `public` is mostly a standard `React` app, which uses `redux` to man
 
 The only novelty is a session object to connect to a cloud assistant in `AppSession.js`, binding actions to remote methods in `AppActions.js`, and a custom initialization in `app.js`.
 
-These are **not** strong dependencies. This is just an example integrating *Caf.js* with a front end, using libraries that we are familiar with. Replacing `React` by another framework would require a new plugin for PSSR. Replacing `redux` by other state management solution just needs a simple integration with the client library, as in `AppActions.js`. There are no *Caf.js* dependencies with `react-bootstrap`.
+These are **not** hard dependencies. This is just an example integrating *Caf.js* with a front end, using libraries that we are familiar with. There are no *Caf.js* dependencies with `react-bootstrap`. Replacing `redux` by another state management solution just needs a simple integration with the client library, similar to `AppActions.js`. For PSSR, replacing `React` by another framework would require a new plugin though.
 
+
+</DocsSection>
+
+<DocsSection id="cafjs-cloud">
+
+## Caf.js Cloud
+
+If you are self-hosting your apps, skip this section.
+
+The *Caf.js Cloud* is currently in beta, and this section is likely to change.
+
+#### Requirements
+
+Create a *Caf.js Cloud* account [here](https://root-launcher.cafjs.com).
+
+Login and create an instance of the [Turtles](https://github.com/cafjs/caf_turtles.git) deployer (app publisher `root`, app name `turtles`, choose any name for your instance).
+
+To publish a **public** `Docker` image containing your app, you need an account on a public Docker registry. For example, [Docker Hub](https://hub.docker.com),  [GitHub Container Registry](https://docs.github.com/en/packages/guides/about-github-container-registry), and [GitLab Container Registry](https://docs.gitlab.com/ee/user/packages/container_registry/), they all have free plans. We use internally the [Google Container Registry](https://cloud.google.com/container-registry).
+
+If you do not have a registry account, but just want to try `Turtles`, the image for this example is `gcr.io/cafjs-k8/root-webexample`.
+
+#### Deploy
+
+Let's create an image with the previous app. Change the image name prefix to match your registry provider.
+
+```shell
+cd playground/app; cafjs mkImage . gcr.io/cafjs-k8/root-webexample
+```
+
+Ensure that it runs fine before uploading
+
+```shell
+cafjs run --appImage gcr.io/cafjs-k8/root-webexample myapp
+```
+
+and then create local instances as before.
+
+Now we are ready to upload the image
+
+```shell
+docker push gcr.io/cafjs-k8/root-webexample
+```
+
+Login to *Caf.js Cloud* `https://root-launcher.cafjs.com` using a browser.
+
+And then, to go live, you need to do two things:
+
+* Register the app with the top left menu.
+* Deploy with `Turtles`.
+
+When you register this app, choose a name, a plan, and the percentage of profit that you want to make. Based on that your app gets a price in subscription-days per unit. A unit is 10 cents plus fees. See section <Link to="../../hosting">Caf.js Cloud</Link> for details.
+
+To deploy with `Turtles` use the previous app and image names. Set `Disable CDN` to `On`, unless you have configured your own CDN in the image. You can also set environment properties for your app. We use properties to configure secrets since images are always public.
+
+Check the status of your app (assuming your username is `antonio`, and the app name is `mycoolapp`)
+
+```shell
+curl https://antonio-mycoolapp.cafjs.com/ping
+```
+
+and monitor its performance with
+
+```shell
+curl https://antonio-mycoolapp.cafjs.com/stats
+```
+
+After a few seconds, you, and **every other user**, can create an instance of your app with the top-left menu, using your username `antonio` as publisher, and the previous app name `mycoolapp`.
+
+And when they do, you **keep getting units** for as long as they use your app.
+
+Maintaining a registered app costs one unit per week. Do not forget to **delete** the app with `Turtles`, **and unregister** it with the top left menu, when you are done.
+
+With the `People` app, you can view stats for your registered apps, your active cloud assistants, or the current unit balance. You can also use this app to buy more units, or send/receive units to/from other users. This app is free and always installed.
 
 </DocsSection>
 
 <DocsSection id="add-device">
 
-## Add a Device
+## Add a Simulated Device
+
+#### Software Requirements
+
+When *Caf.js* simulates a device, it creates images for an ARM processor, and executes ARM binaries. The goal is to be as close as possible to the real thing.
+
+To do that, install in your Linux box the `qemu-user-static` and `binfmt` modules. For example, in Ubuntu:
+
+```shell
+sudo apt-get update && sudo apt-get install -y qemu-user-static binfmt-support
+```
+
+</DocsSection>
+
+<DocsSection id="raspberry-pi">
+
+## Add a Raspberry Pi
 
 </DocsSection>
 
