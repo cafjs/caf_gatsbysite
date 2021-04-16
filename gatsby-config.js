@@ -46,7 +46,6 @@ module.exports = {
                             disableBgImage: true,
                             linkImagesToOriginal: false,
                             wrapperStyle: fluidResult => {
-//                                console.log(fluidResult);
                                 return `width: 272px;`;
                             }
                         },

@@ -98,7 +98,7 @@ Using a monorepo has many advantages, but the most important one is that you kno
 To create the app skeleton we use `cafjs generate`, an application template generator. The default templates are in a Docker image, and it is easy to customize and share your templates by publishing a new image. See  <Link to="#tools">Tools</Link> for details.
 
 ```shell
-cd playground; rm -r app;  cafjs generate myapp cloud ./app
+cd playground; rm -fr app;  cafjs generate myapp cloud ./app
 ```
 
 and then install, build, and run. Install is only needed for the first build, to update dependencies in the monorepo.
@@ -107,21 +107,52 @@ and then install, build, and run. Install is only needed for the first build, to
 cd app; cafjs install; cafjs build;  cafjs run -d myapp
 ```
 
-This time we used the flag `-d` to turn on debugging mode. You should see debug logs in the console. It also opens the debug port `9229`, and you can set breakpoints, and inspect variables, with the Chrome browser developer tools (`chrome://inspect`).
+This time we used the flag `-d` to turn on debugging mode. You should see debug logs in the console. It also opens the debug port `9229`, and you can set breakpoints, and inspect variables, with the Chrome browser developer tools (`chrome://inspect`). The *Redis* instance is also accessible in host port `6380`.
 
+There is no front end, and we use a script in the `util` directory to read state, and subscribe to notifications.
 
+```shell
+cd util; ./client.js --url http://root-myapp.vcap.me bar foo-ca1
+```
 
-Write your app in a subdirectory of `caf/playground/app`, and yarn workspaces will also manage your app dependencies. This is recommended because it guarantees that all your `Caf.js` dependencies have been tested together. Ditto with your modules under `caf/playground`, i.e., they are part of the workspace and do not need to be published during development.
+What is in the box?
 
+We will use this example to introduce *Caf.js* programming in the <Link to="#concepts">next</Link> section. Let's look at the files in the `lib` directory first:
 
-With the `cafjs` command we can also create apps from templates, simulate devices, build container images to publish in our cloud service, i.e., https://root-launcher.cafjs.com, or reset after a hang. See {@link external:caf_dcinabox} (https://cafjs.github.io/api/caf_dcinabox) for details.
+* `rsa_pub.pem` A dummy public key to validate authentication tokens in a local deployment. When you deploy your app in the *Caf.js Cloud*, we swap this key by the "real" one.
+* `framework++.json` Describes changes to the baseline platform configuration in <Link to="../../apis/#caf_platform">framework.json</Link>.
+* `ca++.json` Describes changes to the baseline cloud assistant configuration in <Link to="../../apis/#caf_ca">ca.json</Link>.
+* `ca_methods.js` Your code.
 
+To understand the json files have a look at our <Link to="#components">component model</Link>. Sections <Link to="#cloud-assistant">Cloud Assistant</Link> and <Link to="#autonomous">Autonomous Computation</Link> cover `ca_methods.js`. The script is explained in the <Link to="#client">Client Library</Link>.
 
 </DocsSection>
 
 <DocsSection id="add-react-frontend">
 
-## Add a React Frontend
+## Add a React User Interface
+
+Let's add a *React* front end to the previous app.
+
+```shell
+cd playground; rm -fr app;  cafjs generate myapp web ./app
+```
+and again:
+
+```shell
+cd app; cafjs install; cafjs build;  cafjs run -d myapp
+```
+
+and now, as we did for testing the <Link to="#install">installation</Link>, login with the browser, and create a few instances with app name `myapp`, and `root` publisher, since we are in local mode.
+
+The app uses <Link to="/autonomous">Proactive Server Side Rendering (PSSR)</Link> for fast app switching. The json files add the required <Link to="../../apis/#caf_react">React plugin</Link>.  In `ca_methods.js` there is also a new method `hello()`, which provides the cache key for rendering, and a few calls to the new plugin. Without PSSR the cloud code would look similar to the previous example.
+
+The code in `public` is mostly a standard `React` app, which uses `redux` to manage state, and `react-bootstrap` components to build the UI.
+
+The only novelty is a session object to connect to a cloud assistant in `AppSession.js`, binding actions to remote methods in `AppActions.js`, and a custom initialization in `app.js`.
+
+These are **not** strong dependencies. This is just an example integrating *Caf.js* with a front end, using libraries that we are familiar with. Replacing `React` by another framework would require a new plugin for PSSR. Replacing `redux` by other state management solution just needs a simple integration with the client library, as in `AppActions.js`. There are no *Caf.js* dependencies with `react-bootstrap`.
+
 
 </DocsSection>
 
@@ -137,7 +168,9 @@ With the `cafjs` command we can also create apps from templates, simulate device
 
 </DocsSection>
 
+With the `cafjs` command we can also create apps from templates, simulate devices, build container images to publish in our cloud service, i.e., https://root-launcher.cafjs.com, or reset after a hang. See {@link external:caf_dcinabox} (https://cafjs.github.io/api/caf_dcinabox) for details.
 </DocsArticle>
+
 
 <DocsArticle id="concepts">
 
