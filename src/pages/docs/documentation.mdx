@@ -242,6 +242,38 @@ To do that, install in your Linux box the `qemu-user-static` and `binfmt` module
 ```shell
 sudo apt-get update && sudo apt-get install -y qemu-user-static binfmt-support
 ```
+#### IoT Device App
+
+Let's create an app that provides a <Link to="/permanent">permanent presence</Link> to an IoT device.
+
+```shell
+cd playground; rm -fr app;  cafjs generate myapp iot ./app
+```
+and then install, build, and run.
+
+```shell
+cd app; cafjs install; cafjs build;  cafjs run -d myapp
+```
+
+The [Gadget](https://github.com/cafjs/caf_gadget.git) app manages IoT devices. Login with the local URL http://root-launcher.vcap.me and create a `Gadget` instance with publisher `root` and app name `gadget`. The instance name should match the name of the device, for example, `device1`.
+
+Create an instance of `myapp` (publisher is always `root` in local deployment), ensure that the instance name matches the device name, i.e., `device1`.
+
+Go back to the `Gadget` instance and set the app name to `root-myapp`. This app does not need privileged mode, but most do, as the popup warning explains. You can also set environment properties for the `node.js` process running in the device.
+
+After `Update` you should see `Token=yes` because we created the app after the `Gadget` instance. If that is not the case, just go back to the app, and the token will transparently propagate.
+
+Now we are ready to start the simulated device in another console. Note that the name of the device should match `device1`.
+
+```shell
+cafjs device -d foo-device1
+```
+
+The first thing the new device does is to contact its `Gadget` instance. Then, it downloads an spec to build the Docker image for the current app. Building an ARM image takes about a minute in my laptop, but images are cached in the host, and only rebuild when the spec changes. Finally, it starts the app.
+
+Since we started the app with `-d` (debug mode), you should see the debug logs in the console. If you go back to the `myapp` instance, and click `Do it!`, you should see `setPin` set to `true`, and about a second later, `setPin` set to `false`. That's our blink.
+
+Debug mode also opens the port
 
 </DocsSection>
 
