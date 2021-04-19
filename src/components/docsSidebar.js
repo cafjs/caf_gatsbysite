@@ -79,7 +79,7 @@ const DocsSidebar = () => {
                 <Nav.Item><Nav.Link className="scrollto" href="#iot-device">IoT Device</Nav.Link></Nav.Item>
 
                 <Nav.Item className="nav-item section-title mt-3">
-                  <Nav.Link className="scrollto" href="../apis"><FontAwesomeIcon className="fa-fw" icon={faCog}/> APIs</Nav.Link>
+                  <Nav.Link className="scrollto" href="../../apis"><FontAwesomeIcon className="fa-fw" icon={faCog}/> APIs</Nav.Link>
                 </Nav.Item>
 
                 <Nav.Item className="nav-item section-title mt-3">

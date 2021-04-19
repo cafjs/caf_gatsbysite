@@ -83,6 +83,12 @@ In both cases we should be able to restart without losing the previous state, si
 sudo rm /tmp/redis/appendonly.aof
 ```
 
+Finally, when containers hang, we can always use the nuclear cleanup option
+
+```shell
+cafjs reset
+```
+
 </DocsSection>
 
 <DocsSection id="headless-example">
@@ -244,7 +250,7 @@ sudo apt-get update && sudo apt-get install -y qemu-user-static binfmt-support
 ```
 #### IoT Device App
 
-Let's create an app that provides a <Link to="/permanent">permanent presence</Link> to an IoT device.
+Let's create an app that provides a <Link to="/permanent">permanent presence</Link> for an IoT device.
 
 ```shell
 cd playground; rm -fr app;  cafjs generate myapp iot ./app
@@ -259,21 +265,34 @@ The [Gadget](https://github.com/cafjs/caf_gadget.git) app manages IoT devices. L
 
 Create an instance of `myapp` (publisher is always `root` in local deployment), ensure that the instance name matches the device name, i.e., `device1`.
 
-Go back to the `Gadget` instance and set the app name to `root-myapp`. This app does not need privileged mode, but most do, as the popup warning explains. You can also set environment properties for the `node.js` process running in the device.
+Go back to the `Gadget` instance and set the app name to `root-myapp`. This app does not need privileged mode, but most do, as the pop-up warning explains. You can also set environment properties for the `node.js` process running in the device.
 
 After `Update` you should see `Token=yes` because we created the app after the `Gadget` instance. If that is not the case, just go back to the app, and the token will transparently propagate.
 
-Now we are ready to start the simulated device in another console. Note that the name of the device should match `device1`.
+Now we are ready to start the simulated device in another console. Note that the name of the device should be `device1`.
 
 ```shell
 cafjs device -d foo-device1
 ```
 
-The first thing the new device does is to contact its `Gadget` instance. Then, it downloads an spec to build the Docker image for the current app. Building an ARM image takes about a minute in my laptop, but images are cached in the host, and only rebuild when the spec changes. Finally, it starts the app.
+The first thing the new device does is to download from its `Gadget` instance a Docker image spec for the current app. Building this ARM image takes about a minute in my laptop, but images are cached in the host, and only rebuild when the spec changes. Then, it starts the app in a container.
 
-Since we started the app with `-d` (debug mode), you should see the debug logs in the console. If you go back to the `myapp` instance, and click `Do it!`, you should see `setPin` set to `true`, and about a second later, `setPin` set to `false`. That's our blink.
+Since we started the app with `-d` (debug mode), you should see the debug logs in the console. If you go back to the instance of `myapp`, and click `Do it!`, you should see in the log `setPin` set to `true`, and about a second later, `setPin` set to `false`. That's our blink.
 
-Debug mode also opens the port
+Debug mode also opens port `9230` for attaching the Chrome browser developer tools. The catch is that the source path inside the container is `/usr/src/app/lib`, different from the host path. To set breakpoints, use this path when loading files.
+
+With three instances of the developer tools we can set breakpoints in the front end, the simulated cloud (port `9229`), and the simulated device (port `9230`).
+
+What has changed inside the box?
+
+We have a new directory `iot` with code that runs in the device. Two important files inside `iot/lib`:
+
+* `iot++.json` Describes changes to the baseline IoT device configuration in <Link to="../../apis/#caf_iot">iot.json</Link>.
+* `iot_methods.js` Your code.
+
+Section <Link to="#iot-device">IoT Device</Link> covers `iot_methods.js`.
+
+In `lib/*.json` we have added a new <Link to="../../apis/#caf_iot">IoT</Link> plugin. Also, `ca_methods.js` has new methods called by the device, and `hello()` propagates the authentication token to the `Gadget` app.
 
 </DocsSection>
 
@@ -281,15 +300,80 @@ Debug mode also opens the port
 
 ## Add a Raspberry Pi
 
+#### Requirements
+
+Raspberry Pi 3/4 with a modern (2020 or later) Raspberry Pi OS.
+
+Install in the RPi both *Docker* and the *Caf.js* management daemon, as described in <Link to="../../apis/#caf_rpi">here</Link>.
+
+For this discussion we assume *Caf.js Cloud* hosting. It is also possible to integrate an RPi with a local deployment by using the laptop external IP address, and not the local loop address. See <Link to="#tools">Tools</Link> for details.
+
+#### IoT Device App
+
+Deploy the previous `myapp` in the Cloud. See <Link to="#cafjs-cloud"> Caf.js Cloud</Link>.
+
+When the name of the device is, for example, `antonio-device1`, both the `Gadget` and `myapp` instance names should be `device1`.
+
+After that, the experience should be similar to the simulated case. But instead of printing log messages, the GPIO pin in the RPi should turn on and off, blinking a light, or making a sound, based on what is connected to the GPIO pins.
+
+
 </DocsSection>
 
 <DocsSection id="three-way-isomorphic">
 
 ## Three-way Isomorphic
 
+We discussed the benefits of a three-way isomorphic framework <Link to="/permanent#three-way">here</Link>.
+
+
+#### Requirements
+
+We tested this app with a [Puck.js](https://www.puck-js.com/), a programmable Bluetooth beacon. This beacon is very easy to program using JavaScript, and we can add GATT services and advertisements with a few lines of code. See [HelloPuck](https://github.com/cafjs/caf_hellopuckjs.git) for details.
+
+If you do not have a `Puck.js`, you should be able to easily adapt this example to other Bluetooth devices. Configure GATT services and characteristics in `lib/ca++.json`. Change payload types in `iot/lib/iot_methods.js`.
+
+The Web Bluetooth API is supported by the *Chrome* browser in both Android and desktop platforms. *Firefox* or *Safari* will not work. For *Apple iOS* we have sucessfully run simple examples with the [WebBLE](https://apps.apple.com/us/app/webble/id1193531073) browser, but some code changes are needed. [Bluefy](https://apps.apple.com/us/app/bluefy-web-ble-browser/id1492822055) is another *Apple iOS* browser option.
+
+#### Bluetooth App
+
+Let's build a three-way isomorphic Bluetooth app with *Caf.js*.
+
+```shell
+cd playground; rm -fr app;  cafjs generate myapp iotbrowser ./app
+```
+
+and then install, build, and run.
+
+```shell
+cd app; cafjs install; cafjs build;  cafjs run -d myapp
+```
+
+With *Chrome*, login and create an instance of `myapp` with publisher `root`, app name `myapp`, and instance name `puck1`.
+
+Switch the `Browser Daemon` option to `on`. It will create a tab with a new hostname `http://root-myapp.localhost:3003/`. Chrome allows subdomains for `localhost`, and port `3003` provides direct access to `myapp`. The Web Bluetooth API requires `https` or `localhost`. It is also blocked inside a cross-origin iframe. By spawning the iframe into its own page, with a new hostname, we avoid these limitations.
+
+Click `Find`, then `Click to Pair`, select the compatible device, and then confirm. After that, blink the `Puck.js` light, or click the physical `Puck.js` button to start receiving notification from the beacon. Sharing a URL allows someone remote to interact with the beacon, see <Link to="/permanent">Permanent Presence</Link>.
+
+The simulated device runs inside the iframe `index-iot.html`, with the same origin as the top context. Using the *Chrome* developer tools we can debug device code by targeting this iframe.
+
+What about isomorphic?
+
+We can deploy this app unchanged on a Raspberry Pi, see the previous <Link to="#raspberry-pi">section</Link>. Keep the `Browser Daemon` option to `off`. The user interface simplifies, with fewer clicks, but the overall functionality is similar.
+
+Note that you should use a different instance name, matching the Raspberry Pi name, for example, `rpi1` instead of `puck1`. Never reuse an instance name for both browser and RPi.
+
+And this application also executes device code in the Cloud, introspecting device methods in the <Link to="../../apis/#caf_iot">IoT plugin</Link>.
+
+Some important code changes:
+
+* Modify the build system in `bin/build.sh` to `browserify` device code.
+* Introduce `iot/lib/main-shim.js` as the new entry point for the device in the browser.
+* Spawn a page that executes device code in an iframe (`public/js/components/Finder.js`).
+* Add a <Link to="../../apis/#caf_iot_gatt">Bluetooth plugin</Link> in `iot/lib/iot++.json`.
+* Add a React app for remote interaction in `public/user`.
+
 </DocsSection>
 
-With the `cafjs` command we can also create apps from templates, simulate devices, build container images to publish in our cloud service, i.e., https://root-launcher.cafjs.com, or reset after a hang. See {@link external:caf_dcinabox} (https://cafjs.github.io/api/caf_dcinabox) for details.
 </DocsArticle>
 
 
@@ -301,25 +385,152 @@ With the `cafjs` command we can also create apps from templates, simulate device
 
 ## Components
 
-```js
-exports.newInstance = async function($, spec) {
-    let isShutdown = false;
-    const that = {
-        hello() {
-            !isShutdown && console.log(spec.name + ':' + spec.env.msg);
+In *Caf.js* we build **everything** with hierarchies of components.
+
+Our component model was inpired by the [SmartFrog Framework](https://en.wikipedia.org/wiki/SmartFrog) and the [Erlang/OTP](https://erlang.org) libraries.
+
+Unless you are writing plugins, or reusing the component framework for something else, it is unlikely that you will write components from scratch. But if you are curious, you can see how <Link to="../../apis/#caf_components">here</Link>.
+
+This section is all about using existing ones.
+
+#### Asynchronous Creation
+
+A component is created with an **asynchronous** factory method. During component construction we can, for example, look up properties in *Redis*, and never block the main loop. With factory methods we can swap implementations without modifying the code.
+
+Even though component construction is asynchronous, *Caf.js* builds a hierarchy of components with a deterministic order. A parent component is only inserted in its parent context **after** its children are created in **left to right** order. When the hierarchy is destroyed, the order is reversed. The topmost component is special, it is always there.
+
+Therefore, dependencies between components are respected by controlling creation order.
+
+#### Supervision Trees
+
+A parent component periodically checks the health of its children. If one is missing, or in a failed state, it takes one of these three recovery actions:
+
+* Shutdown remaining children in reverse order, and then restart them all.
+* Restart only the missing child.
+* Ignore the failure.
+
+What if the component keeps failing? Its parent component eventually fails, and the fault bubbles up. If it reaches the top component, the process exits, and *Kubernetes* restarts the container somewhere else.
+
+No more zombie containers due to **shallow** health checking!
+
+#### How to Navigate the Hierarchy?
+
+Every component has a reference, `this.$`, to a context shared with its siblings. Components register with a name, which is unique in that context. For example, if component `foo` is created before sibling component `bar`, `bar` can access `foo` with `this.$.foo`
+
+What about components that are not siblings? Every context has a reference `_` to the topmost component that is allowed to see. Children of this component can be accessed with `this.$._.$`. For example, the logger component is the first child of the topmost component, visible to others as `this.$._.$.log`.
+
+Application code is not allowed to navigate the internal hierarchy. Instead, security proxies to internal components populate `this.$`, and you never use `_`. For example, `this.$.log` is a reference to the logger security proxy, that internally finds the real logger component in `$._.$.log`.
+
+*Caf.js* internals are written in a functional style, hiding these private references in closures.
+
+#### Describing Hierarchies with JSON
+
+```json
+{
+    "name" : "top",
+    "module" : "caf_components#supervisor",
+    "description" : "Supervisor for this app.",
+    "env": {
+        "logLevel": "process.env.LOG_LEVEL||DEBUG",
+        "somethingElse": "process.env.SOMETHING_ELSE||{\"goo\":2}",
+        "maxRetries" : "process.env.MAX_RETRIES||10",
+        "retryDelay" : "process.env.RETRY_DELAY||1000"
+    },
+    "components": [
+        {
+            "name" : "log",
+            "module": "caf_components#plug_log",
+            "description": "Logger service",
+            "env" : {
+                "logLevel" : "$._.env.logLevel"
+            }
         },
-        async __ca_checkup__(data) {
-            return isShutdown ? [new Error('Shutdown')] : [];
-        },
-        async __ca_shutdown__(data) {
-            isShutdown = true;
-            $ && ($[spec.name] === that) && delete $[spec.name];
-            return [];
+        {
+            "name" : "foo",
+            "module": "./myApp",
+            "description": "My app component",
+            "env" : {
+                "somethingElse" : "$._.env.somethingElse",
+                "message" : "Hello"
+            }
         }
-    };
-    return [null, that];
-};
+    ]
+}
 ```
+
+The JSON file above, `components.json`,  describes a parent component `top` with two children components `log` and `foo`. Since `foo` is created after sibling `log`, it can safely find the logger with `this.$.log`.
+
+The attribute `module` identifies the factory method that instantiates the component. For example, for `caf_components#supervisor` the factory method will be found with `module.require("caf_components").supervisor`.
+
+The attribute `env` specifies initialization properties for the component. Three examples of property value types:
+
+* `Hello`: a JSON serialized type. If JSON parsing fails, we assume it was a string that was not quoted.
+* `process.env.LOG_LEVEL||DEBUG`: a system environment property. If `LOG_LEVEL` is not set, we use `DEBUG` as default. Resolved values are always JSON serialized types.
+* `$._.env.logLevel`: a reference to the topmost `env`. In this case it resolves to `process.env.LOG_LEVEL||DEBUG`.
+
+To create an instance of the hierarchy, *Caf.js*  merges the instantiation properties with the topmost `env`. And this happens before resolving any other properties.
+
+Combined with linking, we can configure internal components without knowing the internal structure of the description.
+
+#### Patching JSON Descriptions
+
+In most cases we do not create descriptions from scratch. We use a base description as a template, and change a few attributes, or add/delete some components.
+
+To change `components.json` create a new description called `components++.json` that will be merged with `components.json`.
+
+For example, to modify the `message` property
+
+```json {7}
+{
+    "name" : "top",
+    "components": [
+        {
+            "name": "foo",
+            "env": {
+                "message": "Goodbye"
+            }
+        }
+    ]
+}
+```
+
+or set `module` to `null` to delete the `foo` component
+
+```json {6}
+{
+    "name" : "top",
+    "components": [
+        {
+            "name": "foo",
+            "module": null
+        }
+    ]
+}
+```
+
+or to insert a new component `bar` before `foo`
+
+```json {4-6}
+{
+    "name" : "top",
+    "components": [
+        {
+            "name": "log"
+        },
+        {
+            "name" : "bar",
+            "module": "./myApp",
+            "description": "My other app component",
+            "env" : {
+                "somethingElse" : "$._.env.somethingElse",
+                "message" : "Whatever"
+            }
+        }
+    ]
+}
+```
+
+Note the "touch" operation to indicate the insertion position in the array. Insertion of a component with a new key is right after the last array operation.
 
 </DocsSection>
 
@@ -328,6 +539,142 @@ exports.newInstance = async function($, spec) {
 
 ## Cloud Assistant
 
+The Cloud Assistant (CA) is the main abstraction provided by the *Caf.js* framework. The foundation of a CA is the Actor Model. *Caf.js* makes actors transactional, and mediates access to the external world with transactional plugins.
+
+The internal state of a CA is **always** consistent with its external commitments, even after server failures.
+
+The  <Link to="/orchestration#transactional-actors">Reliable Service Orchestration</Link> section described the Actor Model, our transactional plugins, the CA checkpointing implementation with *Redis*, and the recovery strategies after a failure.
+
+In this section we focus on what all this means for your code.
+
+
+#### Hello World
+```js
+const caf = require('caf_core');
+exports.methods = {
+    async __ca_init__() {
+        this.state.counter = 0;
+        return [];
+    },
+    async getCounter() {
+        this.$.log && this.$.log.debug('getCounter()')
+        return [null, this.state.counter];
+    }
+};
+caf.init(module);
+```
+
+The file `ca_methods.js` is the entry point for your application. You can change the name of this file by changing configuration properties, but it can be confusing for others reading your code if you do so.
+
+
+This file exports a mixin of methods for your CA using the property `methods`.
+There are two types of methods:
+
+* **Internal methods** called by the framework. They always have a prefix name `__ca_`. For example, `__ca_init__()` will be called by *Caf.js* the first time the CA is initialized.
+* **External methods** called by remote clients. They are all the others. For example, `getCounter()` can be invoked by an authorized client to know the current counter value.
+
+Methods are `async` methods, and always return an array. This array represents a tuple error-value, where an optional application-level error is the first element of the array, and an optional second element is the value returned to the client when there are no errors.
+
+A *Caf.js* application loads with `caf.init()`. We pass as an argument the current `module` object,  to facilitate finding descriptions and plugins that share directory with the file `ca_methods.js`. The *Caf.js* loader maintains a list of `module` objects, and tries them in sequence until it finds the resource.
+
+A CA keeps internal state in two properties:
+
+* `this.state`: Checkpointed state, needs to be JSON-serializable, and always modified within a transaction.
+* `this.scratch`: Non-transactional state, not checkpointed, but can be anything. Typically used for caching data, or debugging.
+
+Think of a CA as a sealed object.  Never add state outside these two properties.
+
+Access plugins with `this.$`. For example, `this.$.log` returns a proxy to the logger service, and `this.$.log.debug()` adds a debug message to the log.
+ To configure plugins *Caf.js* uses JSON descriptions, as we discussed in the <Link to="#headless-example">Introduction</Link>.
+
+#### Serialization
+
+```js {11}
+const caf = require('caf_core');
+const util = require('util');
+const setTimeoutPromise = util.promisify(setTimeout);
+exports.methods = {
+    async __ca_init__() {
+        this.state.counter = 0;
+        return [];
+    },
+    async increment() {
+        this.state.counter = this.state.counter + 1;
+        await setTimeoutPromise(1000);
+        return this.getCounter();
+    },
+    async getCounter() {
+        return [null, this.state.counter];
+    }
+};
+caf.init(module);
+```
+Express behaviour
+
+Checkpointing, server failures
+#### Error Handling
+```js  {10,13}
+const caf = require('caf_core');
+const assert = require('assert');
+exports.methods = {
+    async __ca_init__() {
+        this.state.counter = 0;
+        return [];
+    },
+    async increment(n) {
+        if (n < 0) {
+            return [new Error('Only increment!')];
+        } else {
+            this.state.counter = this.state.counter + n;
+            assert(!isNaN(this.state.counter));
+            return this.getCounter();
+        }
+    },
+    async getCounter() {
+        return [null, this.state.counter];
+    }
+};
+caf.init(module);
+```
+pass `oops`, ('oops' < 0) is false and
+
+transactional failures
+
+not encouraging delaying assert
+
+Note that we are **not** encouraging to delay input validation, but mistakes happen, and it is good to have a (partial) safety net.
+
+#### External Consistency
+```js {10}
+const caf = require('caf_core');
+const assert = require('assert');
+exports.methods = {
+    async __ca_init__() {
+        this.state.counter = 0;
+        return [];
+    },
+    async increment() {
+        this.state.counter = this.state.counter + 1;
+        this.$.session.notify([this.state.counter]);
+        if (this.state.counter < 100) {
+            return this.getCounter();
+        } else {
+            return [new Error('Limit exceeded')];
+        }
+    },
+    async getCounter() {
+        return [null, this.state.counter];
+    }
+};
+caf.init(module);
+```
+
+#### Learn more
+scratch, __ca_update,  __ca_resume
+this.$.props
+
+link to jsdoc
+
 </DocsSection>
 
 
@@ -335,11 +682,53 @@ exports.newInstance = async function($, spec) {
 
 ## Autonomous Computation
 
+#### Sessions
+
+```js {6,9-15}
+const caf = require('caf_core');
+const SESSION = 'admin';
+exports.methods = {
+    async __ca_init__() {
+        this.state.counter = 0;
+        this.$.session.limitQueue(1, SESSION);
+        return [];
+    },
+    async __ca_pulse__() {
+        this.state.counter = this.state.counter + 1;
+        if (this.state.counter % this.$.props.divisor === 0) {
+            this.$.session.notify([this.state.counter], SESSION);
+        }
+        return [];
+    },
+    async increment() {
+        this.state.counter = this.state.counter + 1;
+        return this.getCounter();
+    },
+    async getCounter() {
+        return [null, this.state.counter];
+    }
+};
+caf.init(module);
+```
+#### Learn More
+  Persistent session
+
 </DocsSection>
 
 <DocsSection id="client">
 
 ## Client Library
+
+script, browser, cloud and device
+#### Request-Response
+
+Serialization, error handling
+
+#### Notifications
+
+#### Learn More
+
+Multi-methods, end-to-end encryption and time synchronization
 
 </DocsSection>
 
