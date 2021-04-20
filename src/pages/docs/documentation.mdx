@@ -656,7 +656,7 @@ caf.init(module);
 There are two kinds of errors:
 
 * **Application-level** errors that your code knows best how to handle. These are errors returned in the first element of the array.
-* **Irrecoverable** errors, mostly bugs, which *Caf.js* does not expect your code to handle gracefully. These are uncaught exceptions thrown by your code.
+* **Unrecoverable** errors, mostly bugs, which *Caf.js* does not expect your code to handle gracefully. These are uncaught exceptions thrown by your code.
 
 The client library handles these two types of errors very differently, as we will see <Link to="#client">soon</Link>.
 
@@ -666,7 +666,7 @@ Again, this enables a **much simpler** programming abstraction.
 
 In the example above, a negative increment is handled as an application-level error, because we assume the client code could do something about it, like suggesting a different service that can decrement.
 
-What happens if the input `n` is the string `oops`? The comparison with `0` is `false`, and we get a `NaN` after the addition. The assertion throws, creating an irrecoverable error.
+What happens if the input `n` is the string `oops`? The comparison with `0` is `false`, and we get a `NaN` after the addition. The assertion throws, creating an unrecoverable error.
 
 In this case a traditional web application framework would have corrupted the state of this CA forever. With millions of cheap CAs, expected to run for years with minimal supervision, manual recovery is not in the menu. This is a disaster.
 
@@ -684,7 +684,7 @@ exports.methods = {
     async increment() {
         this.state.counter = this.state.counter + 1;
         this.$.session.notify([this.state.counter]);
-        if (this.state.counter < 100) {
+        if (this.state.counter <= 100) {
             return this.getCounter();
         } else {
             return [new Error('Limit exceeded')];
@@ -697,11 +697,34 @@ exports.methods = {
 caf.init(module);
 ```
 
-#### Learn more
-scratch, __ca_update,  __ca_resume
-this.$.props
+The internal state of a CA is always consistent with its external commitments.
 
-link to jsdoc
+This sounds a bit abstract, let's give an example to clarify what we mean.
+
+*Caf.js* uses a transactional plugin, `session`, to send events to clients. We will talk about sessions in the <Link to="#autonomous">next</Link> section but, for this discussion, it is just a plugin with external side-effects.
+
+Calling `increment()` adds one to `this.state.counter`, and sends a new event with the new counter.
+
+What happens when the counter exceeds `100`? It returns an error, aborting the transaction, and `this.state.counter` rolls back to `100`.
+
+But what about the event? The external world saw that the internal state is `101`, but that is inconsistent with the current value of `100`.
+
+And this is also a problem for smaller values. If we send the event, and then the server crashes **before** checkpointing, the state update is lost forever. And the world saw the new value.
+
+In other frameworks the missile has already launched, and there is not much we can do about it.
+
+But in *Caf.js* we use transactional plugins to externalize state changes. For example, when we call `this.$.session.notify()`, the plugin just appends to a log our intent to send the event, but it does **not** sent it. Only when the request commits, and the log of actions and the state changes have been checkpointed, the event is sent.
+
+Transactional plugins **compose** using a two-phase commit protocol. We can mix plugins from different providers, and commit them atomically, or abort all of them if one cannot commit. But this happens behind the scenes, application code does not see this complexity.
+
+And yet again, this enables a **much simpler** programming abstraction.
+
+
+#### Learn More
+
+A CA can do much more. Update the schema of its internal state safely. Read application properties from the environment. Customize actions after hibernation.
+
+See the jsdoc documentation <Link to="../../apis/#caf_ca">here</Link>.
 
 </DocsSection>
 
