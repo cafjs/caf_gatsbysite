@@ -399,7 +399,7 @@ A component is created with an **asynchronous** factory method. During component
 
 Even though component construction is asynchronous, *Caf.js* builds a hierarchy of components with a deterministic order. A parent component is only inserted in its parent context **after** its children are created in **left to right** order. When the hierarchy is destroyed, the order is reversed. The topmost component is special, it is always there.
 
-Therefore, dependencies between components are respected by controlling creation order.
+Dependencies between components are respected by controlling creation order.
 
 #### Supervision Trees
 
@@ -609,9 +609,25 @@ exports.methods = {
 };
 caf.init(module);
 ```
-Express behaviour
 
-Checkpointing, server failures
+A CA serializes requests with a queue. Before processing the next request in the queue, it ensures that the current one has finished, even if that requires waiting for the completion of several asynchronous steps.
+
+Serialization does not reduce performance. There could be thousands of CAs in a single process, and blocking one of them does not affect the others, since each CA has its own queue, and its state is private.
+
+And serialization in *Caf.js* is a cluster-wide property. Servers can fail, with hundreds of processes spread across many servers running your app, but CA requests will always be processed one after another.
+
+What is the Big Deal?
+
+Serialization enables a **much simpler** programming abstraction.
+
+Let's assume that `increment()` is expected to return a unique value each time is called.
+
+The innocent looking `increment()` method would have a subtle bug if it were implemented in the same way with existing web application frameworks, such as `Express`.
+
+If one request is waiting for the timeout, and another one starts executing, the second one will also update `this.state.counter`. When the first one ends the timeout, it will return the current value of `this.state.counter`, which was updated by the second request. Now both return the same value.
+
+And races tend to break things when the system is under heavy load, in production, not when doing simple testing. With the convenience of `async/await` primitives in modern *JavaScript*, introducing races is so much easier...
+
 #### Error Handling
 ```js  {10,13}
 const caf = require('caf_core');
@@ -636,13 +652,25 @@ exports.methods = {
 };
 caf.init(module);
 ```
-pass `oops`, ('oops' < 0) is false and
 
-transactional failures
+There are two kinds of errors:
 
-not encouraging delaying assert
+* **Application-level** errors that your code knows best how to handle. These are errors returned in the first element of the array.
+* **Irrecoverable** errors, mostly bugs, which *Caf.js* does not expect your code to handle gracefully. These are uncaught exceptions thrown by your code.
 
-Note that we are **not** encouraging to delay input validation, but mistakes happen, and it is good to have a (partial) safety net.
+The client library handles these two types of errors very differently, as we will see <Link to="#client">soon</Link>.
+
+But a CA always aborts the transaction associated with the request. This means that any changes to `this.state` are reversed, and all the transactional plugins will also abort, avoiding any external side-effects.
+
+Again, this enables a **much simpler** programming abstraction.
+
+In the example above, a negative increment is handled as an application-level error, because we assume the client code could do something about it, like suggesting a different service that can decrement.
+
+What happens if the input `n` is the string `oops`? The comparison with `0` is `false`, and we get a `NaN` after the addition. The assertion throws, creating an irrecoverable error.
+
+In this case a traditional web application framework would have corrupted the state of this CA forever. With millions of cheap CAs, expected to run for years with minimal supervision, manual recovery is not in the menu. This is a disaster.
+
+Note that we are **not** encouraging to delay input validation, or promote other bad programming habits, but mistakes happen, and it is a good idea to have a safety net.
 
 #### External Consistency
 ```js {10}
