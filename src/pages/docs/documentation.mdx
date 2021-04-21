@@ -733,7 +733,15 @@ See the jsdoc documentation <Link to="../../apis/#caf_ca">here</Link>.
 
 ## Autonomous Computation
 
+
+`__ca_pulse__()`
+
+how often, change the `interval` property of the `cron_pulser` component in `framework++.json`. The default is every 2 seconds.
 #### Sessions
+
+
+
+Default limits
 
 ```js {6,9-15}
 const caf = require('caf_core');
@@ -761,6 +769,45 @@ exports.methods = {
 };
 caf.init(module);
 ```
+
+
+##### Dynamic Notification Groups
+
+What if the number of clients listening to CA events is not known a priori?
+
+We can use regular expressions to notify multiple clients. Clients can choose a unique session name matching that regular expression.
+
+Let's show an example:
+
+```js {2,11}
+const caf = require('caf_core');
+const SESSION = /^admin/;
+exports.methods = {
+    async __ca_init__() {
+        this.state.counter = 0;
+        return [];
+    },
+    async __ca_pulse__() {
+        this.state.counter = this.state.counter + 1;
+        if (this.state.counter % this.$.props.divisor === 0) {
+            this.$.session.notify([this.state.counter], SESSION);
+        }
+        return [];
+    },
+    async getCounter() {
+        return [null, this.state.counter];
+    }
+};
+caf.init(module);
+```
+
+When a client calls `getCounter()`, its session name will be added to the notification set, if it starts with `admin`. A name suffix could be random, or based on the username, or chosen by the user. The goal is to avoid name collisions with other clients. After being offline, the client could reuse the session name to receive the pending notifications.
+
+*Caf.js* could run out of memory, or waste network bandwidth, if it cannot control the number of sessions in the notification set. There is a system-wide property to do that, `maxSessions`, that can be changed in `ca++.json`, or through environment properties. Similarly, `maxMessages` will limit the maximum number of messages in any queue.
+
+When the `maxSessions` limit has been reached, any session that is offline, and has not set a custom limit of messages, can be garbage collected. This means that your pending notifications may not be there when you reconnect.
+
+
 #### Learn More
   Persistent session
 
