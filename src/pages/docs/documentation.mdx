@@ -587,7 +587,7 @@ Think of a CA as a sealed object.  Never add state outside these two properties.
 Access plugins with `this.$`. For example, `this.$.log` returns a proxy to the logger service, and `this.$.log.debug()` adds a debug message to the log.
  To configure plugins *Caf.js* uses JSON descriptions, as we discussed in the <Link to="#headless-example">Introduction</Link>.
 
-#### Serialization
+#### Request Serialization
 
 ```js {11}
 const caf = require('caf_core');
@@ -733,15 +733,23 @@ See the jsdoc documentation <Link to="../../apis/#caf_ca">here</Link>.
 
 ## Autonomous Computation
 
+In the introduction to <Link to="../../autonomous">Autonomous Computation</Link> we described a few use cases, and gave an overview of notifications in *Caf.js*.
 
-`__ca_pulse__()`
+This section is all about implementing these ideas in your applications.
 
-how often, change the `interval` property of the `cron_pulser` component in `framework++.json`. The default is every 2 seconds.
 #### Sessions
 
+When spawning a long term activity in the Cloud, it is crucial to manage notifications for offline clients. This means queueing them in the Cloud until clients are ready to read them. But it also means ensuring that *Caf.js* does not run out of memory with a leaky queue. And when the client is back online, low latency interaction is a must.
 
+What is the best strategy to manage notification queues?
 
-Default limits
+It depends. Limiting queue size is a given, but deciding what to evict is not. Shall we stop queueing new notifications, or remove the old ones, or just keep the last one, or delete redundant ones, or ...
+
+*Caf.js* sets some sensible limits, but it also makes the notification queues visible to application code. Your autonomous code can supervise the queues.
+
+And a notification queue has a name. A simple name that matches the session name chosen by the client. Swap client devices, type this name, and your notifications will follow you. Or use a different name per device to keep them separately.
+
+Let's show an example
 
 ```js {6,9-15}
 const caf = require('caf_core');
@@ -770,14 +778,24 @@ exports.methods = {
 caf.init(module);
 ```
 
+To make your CA autonomous, implement the `__ca_pulse__()` method, and the runtime will call it periodically.
 
-##### Dynamic Notification Groups
+How often? The default is every 2 seconds, but you can change that in `framework++.json`. Just modify the `interval` property of the `cron_pulser` component.
 
-What if the number of clients listening to CA events is not known a priori?
+In this case `__ca_pulse__()` increments a counter, and whenever the counter is a multiple of `divisor`, it sends a notification to a queue named `admin`. Note that `this.$.props.divisor` is a property configured in `ca++.json`.
 
-We can use regular expressions to notify multiple clients. Clients can choose a unique session name matching that regular expression.
+Calling `limitQueue()` overrides the default configuration, and the queue just keeps the last notification.
 
-Let's show an example:
+When a client connects with a session named `admin`, it first receives this last notification. And then, it keeps receiving new notifications in real-time until it disconnects.
+
+##### Notification Groups
+
+Delivering a notification removes it from the queue. When several clients need to see the same notification, use multiple queues and duplicate notifications.
+
+What if the number of clients is not known a priori? Queues are created on-demand, and we address them with regular expressions.
+
+Let's see an example.
+
 
 ```js {2,11}
 const caf = require('caf_core');
@@ -801,15 +819,16 @@ exports.methods = {
 caf.init(module);
 ```
 
-When a client calls `getCounter()`, its session name will be added to the notification set, if it starts with `admin`. A name suffix could be random, or based on the username, or chosen by the user. The goal is to avoid name collisions with other clients. After being offline, the client could reuse the session name to receive the pending notifications.
+When a client calls `getCounter()`, its session name will be added to the notification group, if it starts with `admin`. A name suffix could be random, or based on the username, or chosen by the user. The goal is to avoid name collisions with other clients. After being offline, the client could reuse the session name to receive the pending notifications.
 
-*Caf.js* could run out of memory, or waste network bandwidth, if it cannot control the number of sessions in the notification set. There is a system-wide property to do that, `maxSessions`, that can be changed in `ca++.json`, or through environment properties. Similarly, `maxMessages` will limit the maximum number of messages in any queue.
+*Caf.js* could run out of memory if it cannot control the number of sessions in the notification group. There is a system-wide property to do that, `maxSessions`, that can be changed in `ca++.json`, or through environment properties. Similarly, `maxMessages` will limit the maximum number of messages in any queue.
 
 When the `maxSessions` limit has been reached, any session that is offline, and has not set a custom limit of messages, can be garbage collected. This means that your pending notifications may not be there when you reconnect.
 
 
 #### Learn More
-  Persistent session
+
+A persistent session can guarantee that an stateless client recovers gracefully after a crash, avoiding duplicated requests. See <Link to="../../apis/#caf_session">Persistent Session</Link> for details, and the app [HelloFail](https://github.com/cafjs/caf_hellofail.git) for an example.
 
 </DocsSection>
 
@@ -817,7 +836,28 @@ When the `maxSessions` limit has been reached, any session that is offline, and 
 
 ## Client Library
 
-script, browser, cloud and device
+The *Caf.js*  <Link to="../../apis/#caf_cli">Client Library</Link> is a tiny library that just needs web socket support. It works in the browser, in the Cloud, with your scripts, and with embedded devices. Currently JavaScript-only, but more languages will be added soon.
+
+The goal of this library is to create an authenticated session with a CA, and then provide a request-response model, and a notification model, using a common abstraction.
+
+#### Authentication
+
+JSON Web Tokens (JWTs) embedded in URLs is the main mechanism for client authentication. Tokens are self-describing, typically short-lived, and signed with the private key of the [Accounts](https://github.com/cafjs/caf_accounts.git) service. Its corresponding public key is always available, and apps validate tokens locally.
+
+Tokens form a semi-lattice, making it easier to weaken them on-demand. By scoping a token to a particular app, owner, or CA name, we eliminate man-in-the-middle attacks, and reduce the damage of a compromised token.
+
+The [Launcher](https://github.com/cafjs/caf_launcher.git) app manages your tokens in the background, renewing and weakening them as needed. It provides Single Sign-On (SSO) for all your CAs. Before redirecting to another app, it just adds the correct token to the URL.
+
+This means that the client library has very little work to do. In most cases, it just extracts the token from a fragment in the URL, and sends it to the CA for validation using TLS.
+
+What happens if there is no valid token in the URL?
+
+The client library calls a `TokenFactory` hook method that will create the token based on other credentials, for example, your username and password for the `Accounts` service.
+
+The client script in our <Link to="#headless-example">first app</Link> shows how to use the SRP `TokenFactory`.
+
+
+
 #### Request-Response
 
 Serialization, error handling
