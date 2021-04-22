@@ -856,17 +856,96 @@ The client library calls a `TokenFactory` hook method that will create the token
 
 The client script in our <Link to="#headless-example">first app</Link> shows how to use the SRP `TokenFactory`.
 
-
+In the following examples the security plugin has been disabled.
 
 #### Request-Response
 
-Serialization, error handling
+```js {2,6}
+const caf_cli = require('caf_core').caf_cli;
+const URL = 'http://root-hello.vcap.me:3000/#from=foo-ca1&ca=foo-ca1';
+const s = new caf_cli.Session(URL);
+s.onopen = async function() {
+    try {
+        let counter = await s.increment(7).getPromise();
+        console.log(counter);
+        counter = await s.getCounter().getPromise();
+        console.log(counter);
+        s.close();
+    } catch (err) {
+        // Application-level error
+        s.close(err);
+    }
+};
+s.onclose = function(err) {
+    if (err) {
+        console.log(`Got exception ${err}`);
+        process.exit(1);
+    }
+    console.log('Done OK');
+    process.exit(0);
+};
+```
+The script above first creates a session with CA `foo-ca1`. There are two fields in the URL fragment, `from` and `ca`, and they are the same. This means that the client is acting as the **owner** of this CA, and the CA will be created if needed. Most clients act as owners, and they always have full access. However, in order to claim a `from` origin, a matching authentication token (not shown) needs to be part of the URL.
+
+After creating the session the `onopen` handler gets called, and we can invoke remote methods on this CA. But there is some magic behind the scenes.
+
+CA methods `increment()` and `getCounter()` become methods of session `s`. The client library has downloaded some metadata from the server, and it has created local methods matching the CA remote methods. These local methods will do sanity checks on the arguments before forwarding requests.
+
+What about error handling?
+
+As we discussed in the <Link to="#cloud-assistant">Cloud Assistant</Link> section, there are two types of errors:
+
+* An **Application-level** error, i.e., the first element of the returned array, is used by the client library to reject the returned *Promise*. Therefore, `async` will throw, and the error can be managed inline.
+* An **Unrecoverable** error, i.e., exceptions thrown by your CA code, will instead close the session, returning the error in the `onclose` handler.
+
+Just to confuse you, this example handles an application-level error by closing the session with it, a common pattern of simple scripts. But there is no need of closing the session, we could just continue.
+
+What happens if we call multiple methods on the session without `await`? The session has a local queue, and serializes requests. Some recoverable errors are also managed transparently by retrying the last request. If you want multiple concurrent requests, create multiple sessions. But remember that the CA will serialize them anyway...
 
 #### Notifications
 
+
+```js {4,17-20}
+const caf_cli = require('caf_core').caf_cli;
+const util = require('util');
+const setTimeoutPromise = util.promisify(setTimeout);
+const URL = 'http://root-hello.vcap.me:3000/#session=admin&from=foo-ca1&ca=foo-ca1';
+const s = new caf_cli.Session(URL);
+s.onopen = async function() {
+    try {
+        let counter = await s.increment(7).getPromise();
+        console.log(counter);
+        await setTimeoutPromise(10000)
+        s.close();
+    } catch (err) {
+        // Application-level error
+        s.close(err);
+    }
+};
+s.onmessage = function(msg) {
+    const counter = caf_cli.getMethodArgs(msg)[0];
+    console.log(`Got notification ${counter}`);
+};
+s.onclose = function(err) {
+    if (err) {
+        console.log(`Got exception ${err}`);
+        process.exit(1);
+    }
+    console.log('Done OK');
+    process.exit(0);
+};
+```
+
 #### Learn More
 
-Multi-methods, end-to-end encryption and time synchronization
+Why do we need `getPromise()`? Multi-method requests, that extend the scope of a transaction to a sequence of CA methods.
+
+Encrypt messages end-to-end with Diffie-Hellman keys.
+
+Synchronize local time with the Cloud.
+
+See the <Link to="../../apis/#caf_cli">jsdoc</Link> for details.
+
 
 </DocsSection>
 
