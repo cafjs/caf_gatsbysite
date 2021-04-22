@@ -74,7 +74,7 @@ const DocsSidebar = () => {
                 <Nav.Item><Nav.Link className="scrollto" href="#autonomous">Autonomous</Nav.Link></Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#client">Client</Nav.Link></Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#trusted-bus">Trusted Bus</Nav.Link></Nav.Item>
-                <Nav.Item><Nav.Link className="scrollto" href="#sharing-actors">Sharing Actors</Nav.Link></Nav.Item>
+                <Nav.Item><Nav.Link className="scrollto" href="#sharedmap">SharedMap</Nav.Link></Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#publish-subscribe">Publish Subscribe</Nav.Link></Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#iot-device">IoT Device</Nav.Link></Nav.Item>
 

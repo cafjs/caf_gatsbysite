@@ -395,9 +395,9 @@ This section is all about using existing ones.
 
 #### Asynchronous Creation
 
-A component is created with an **asynchronous** factory method. During component construction we can, for example, look up properties in *Redis*, and never block the main loop. With factory methods we can swap implementations without modifying the code.
+A component is created with an **asynchronous factory method**. During component construction we can, for example, look up properties in *Redis*, and never block the main loop. With factory methods we can swap implementations without modifying the code.
 
-Even though component construction is asynchronous, *Caf.js* builds a hierarchy of components with a deterministic order. A parent component is only inserted in its parent context **after** its children are created in **left to right** order. When the hierarchy is destroyed, the order is reversed. The topmost component is special, it is always there.
+Even though component construction is asynchronous, *Caf.js* builds a hierarchy of components with a **deterministic order**. A parent component is only inserted in its parent context **after** its children are created in **left to right** order. When the hierarchy is destroyed, the order is reversed. The topmost component is special, it is always there.
 
 Dependencies between components are respected by controlling creation order.
 
@@ -711,7 +711,7 @@ But what about the event? The external world saw that the internal state is `101
 
 And this is also a problem for smaller values. If we send the event, and then the server crashes **before** checkpointing, the state update is lost forever. And the world saw the new value.
 
-In other frameworks the missile has already launched, and there is not much we can do about it.
+In most frameworks the missile has already launched, and there is not much we can do about it.
 
 But in *Caf.js* we use transactional plugins to externalize state changes. For example, when we call `this.$.session.notify()`, the plugin just appends to a log our intent to send the event, but it does **not** sent it. Only when the request commits, and the log of actions and the state changes have been checkpointed, the event is sent.
 
@@ -895,15 +895,14 @@ What about error handling?
 
 As we discussed in the <Link to="#cloud-assistant">Cloud Assistant</Link> section, there are two types of errors:
 
-* An **Application-level** error, i.e., the first element of the returned array, is used by the client library to reject the returned *Promise*. Therefore, `async` will throw, and the error can be managed inline.
+* An **Application-level** error, i.e., the first element of the returned array, is used by the client library to reject the returned *Promise*. Therefore, `await` will throw, and the error can be managed inline.
 * An **Unrecoverable** error, i.e., exceptions thrown by your CA code, will instead close the session, returning the error in the `onclose` handler.
 
 Just to confuse you, this example handles an application-level error by closing the session with it, a common pattern of simple scripts. But there is no need of closing the session, we could just continue.
 
-What happens if we call multiple methods on the session without `await`? The session has a local queue, and serializes requests. Some recoverable errors are also managed transparently by retrying the last request. If you want multiple concurrent requests, create multiple sessions. But remember that the CA will serialize them anyway...
+What happens if we call multiple methods on the session without `await`? The session has a local queue, and serializes requests. Some recoverable errors are also handled transparently by retrying the last request. If you want multiple concurrent requests, create multiple sessions. But remember that the CA will serialize them anyway...
 
 #### Notifications
-
 
 ```js {4,17-20}
 const caf_cli = require('caf_core').caf_cli;
@@ -936,13 +935,19 @@ s.onclose = function(err) {
 };
 ```
 
+Let's add notifications to our previous example. A couple of changes:
+
+* Provide a session name in the URL. We use the name `admin` to match the queue name in the previous CA example.
+* Create an `onmessage` handler that will receive each notification.
+
+Using `getMethodArgs()` we can extract the counter value from the notification.
+
+
 #### Learn More
 
 Why do we need `getPromise()`? Multi-method requests, that extend the scope of a transaction to a sequence of CA methods.
 
-Encrypt messages end-to-end with Diffie-Hellman keys.
-
-Synchronize local time with the Cloud.
+And more... Encrypt messages end-to-end with Diffie-Hellman keys. Synchronize local time with the Cloud.
 
 See the <Link to="../../apis/#caf_cli">jsdoc</Link> for details.
 
@@ -953,11 +958,94 @@ See the <Link to="../../apis/#caf_cli">jsdoc</Link> for details.
 
 ## Trusted Bus
 
+In the <Link to="../../collaborative">Collaborative Multi-tenancy</Link> overview, we talked about the importance of bootstrapping trust between users of one app, and how a *Trusted Bus* abstraction helped with that goal.
+
+A *Trusted Bus* mediates **internal** interactions between users, authenticating requests, and enforcing access control policy at the target endpoints.
+
+The emphasis is on **internal**. Within **one** app.
+
+The client library is not designed for internal interactions between untrusted peers. Authentication tokens will be compromised. This could be fixed with public-key cryptography, but the performance hit, and key management complexity, makes it impractical.
+
+Can we authenticate requests without tokens, or other crypto?
+
+Sure, if every possible request source is trusted, and requests in transit cannot be modified.
+
+The *Caf.js Cloud* configures Kubernetes network policy to do just that. The *Node.js* processes of your application live in their own network bubble, isolated from other apps.
+
+And application code does not directly access the network. Instead, it uses plugins that have been wrapped by security proxies. These proxies do not trust the application code, adding to each request the name of the CA that sends it.
+
+This makes it less likely that a bug in your application will compromise authentication. After all, your code does not do anything, and authentication is transparently handled by proxies.
+
+What about authorization?
+
+*Caf.js* always performs an access control check at the destination, before calling  a CA method. It also makes the caller CA name visible, while the method executes, with `this.$.security.getCallerFrom()`.
+
+But your code configures policy. And the rest of this section explains how.
+
+#### Defaults
+
+The default policy is **trust no one**. The owner is the only one that can invoke methods on a CA.
+
+And allowed interactions are external-only, using the client library, with owner requests where the `from` and `ca` properties match, as described in the <Link to="#client">Client Library</Link> section.
+
+No *Trusted Bus* interaction.
+
+If nothing works, **check the security policy** first...
+
+#### Simple Rules
+
+Naming conventions simplify policy.
+
+In *Caf.js* naming is based on local namespaces.The name of a CA is always relative to its owner, for example, `foo-ca1` means the user `foo` owns a CA named `ca1`. The name of a `SharedMap` is always relative to the CA that owns it, for example, `foo-ca1-friends`. And so on...
+
+It is easy to enforce and describe policies based on ownership.
+
+For example, to enable CAs with the same owner, using the *Trusted Bus*, to call the method `getCounter()` on each other.
+
+```js {5-8}
+const caf = require('caf_core');
+exports.methods = {
+    async __ca_init__() {
+        this.state.counter = 0;
+        const rule = this.$.security.newSimpleRule(
+            'getCounter', this.$.security.SELF
+        );
+        this.$.security.addRule(rule);
+        return [];
+    },
+    async getCounter() {
+        this.$.log && this.$.log.debug('getCounter()')
+        return [null, this.state.counter];
+    }
+};
+caf.init(module);
+```
+
+More examples.
+
+To open all the CA methods
+
+```js
+const rule = this.$.security.newSimpleRule(null, this.$.security.SELF);
+```
+
+or to enable CA with local name `ca3` of my friend `joe`, i.e., `joe-ca3`.
+
+```js
+const rule = this.$.security.newSimpleRule(null, 'joe', 'ca3');
+```
+
+Note that to allow external interactions with the client library there is a "secret" method that also needs to be enabled, `__external_ca_touch__`.
+
+Prefer the *Trusted Bus* over external interaction. It is no longer your code making requests. There are dragons out there...
+
+#### Aggregate Rules
+
 </DocsSection>
 
-<DocsSection id="sharing-actors">
+<DocsSection id="sharedmap">
 
-## Sharing Actors
+## SharedMap
 
 </DocsSection>
 
