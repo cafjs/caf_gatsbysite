@@ -1110,6 +1110,16 @@ Principals can be a CA name, like `foo-ca1`, but also the name of a CA owner, su
 
 Maintaining the quickly changing membership of a large group is a team effort.
 
+With *Caf.js*, it is very easy to get help from others by linking *SharedMaps*.
+
+The security library will traverse the resulting graph, and a principal is in the allowed set if it is in **any** of the reachable *SharedMaps*. The graph can have cycles too.
+
+And what's cool is that a *SharedMap* is a scalable distributed data structure, updated with transactional plugins, with clean semantics that do not break the Actor model. Supporting thousands of processes across many servers...
+
+This means that access control policy will scale with your app. And policy changes should be predictable, and propagate quickly.
+
+Let's show how linking works:
+
 ```js
 const LINK_KEY = '__link_key__';
 exports.methods = {
@@ -1129,7 +1139,11 @@ exports.methods = {
 }
 ```
 
+The default key for linking is `__link_key__`. Its value is an array with the names of other `SharedMaps`, for example, `["antonio-admin-friends", "joe-admin-acl"]`. Only the owner of the `admin` CA can change it, using the `linkNamespace()` method.
+
 #### Learn More
+
+Decentralized authorization systems, such as SDSI, inspired our approach to access control policy. More details  <Link to="../../apis/#caf_security">here</Link>.
 
 
 </DocsSection>
@@ -1137,6 +1151,108 @@ exports.methods = {
 <DocsSection id="sharedmap">
 
 ## SharedMap
+
+The Actor Model has a weakness. It is difficult to replicate state efficiently, and without breaking serialization, across many actors.
+
+When thousands of actors live in a process, it makes sense to use shared memory for replicated data. But if we do, we could introduce all the gremlins of shared memory programming. Deadlocks. Data races. Awful failure modes.
+
+A *SharedMap* takes advantage of shared-memory, keeps serialization, and avoids the gremlins. We discussed how <Link to="../../apis/#caf_sharing">here</Link>.
+
+*SharedMaps* are Distributed Data Structures (DDS) that can scale to thousands of processes on many nodes.
+
+A *SharedMap* has one writer, its CA owner, and many CAs that can read from it. Its name is relative to the CA owner. For example, if the CA name is `foo-ca1`, a valid *SharedMap* name is `foo-ca1-map1`. Naming, and the <Link to="#trusted-bus">Trusted Bus</Link>, ensure that the owner is the only writer.
+
+CAs treat a *SharedMap* as internal state. Updates are checkpointed with a transactional plugin, guaranteeing  <Link to="#cloud-assistant">external consistency</Link>. Updates respect serialization, and readers only see changes **after** a completed request.
+
+Let's see some examples
+
+```js
+const caf = require('caf_core');
+const ADMIN_CA = 'admin';
+const ADMIN_MAP = 'primarySharedMap';
+const isAdmin = function(self) {
+    const name = self.__ca_getName__();
+    return (caf.splitName(name)[1] === ADMIN_CA);
+};
+const primaryMap = function(self) {
+    const name = self.__ca_getName__();
+    return caf.joinName(caf.splitName(name)[0], ADMIN_CA, ADMIN_MAP);
+};
+exports.methods = {
+    async __ca_init__() {
+        if (isAdmin(this)) {
+            const initialValue = {counter: 0};
+            this.$.sharing.addWritableMap('primary', ADMIN_MAP, {initialValue});
+        }
+        this.$.sharing.addReadOnlyMap('replica', primaryMap(this));
+        return [];
+    },
+    async __ca_pulse__() {
+        if (isAdmin(this)) {
+            const $$ = this.$.sharing.$;
+            const counter = $$.primary.get('counter');
+            $$.primary.set('counter', counter + 1);
+        }
+        return [];
+    },
+    async getCounter() {
+        const $$ = this.$.sharing.$;
+        const value = $$.replica.get('counter');
+        return [null, value];
+    }
+};
+caf.init(module);
+```
+
+Each user of this application first creates an `admin` CA, and then multiple reader CAs. The `admin` CA periodically updates a *SharedMap*, and readers provide a `getCounter()` method that will **eventually** reflect these changes (see <Link to="../../apis/#caf_sharing">monotonic read consistency</Link>).
+
+CA creation order is important because readers will block until the *SharedMap* is available. To avoid blocking, we can set the `{bestEffort: true}` option in the method `addReadOnlyMap()`. In that case, when the map is not available, `$$.replica` would be `null`, and CAs can call `addReadOnlyMap()` again. This retry is typically added to `__ca_pulse__()`.
+
+Note that, after *SharedMap* creation, a reader CA does not depend on the writer CA to be active. It always loads the last snapshot of the *SharedMap*.
+
+In the previous example, we used the aliases `primary` and `replica`, and access the  *SharedMaps* with `$$.primary` and `$$.replica`. These are just local aliases, changing them has no external effects.
+
+Initialization of a *SharedMap* uses the option `initialValue`. This is convenient because we cannot write to it in `__ca_init__()`.
+
+Updates respect serialization. If we rewrite `getCounter()` like this
+
+```js {4-6}
+    async getCounter() {
+        const $$ = this.$.sharing.$;
+        const counter1 = $$.replica.get('counter');
+        await setTimeoutPromise(10000);
+        const counter2 = $$.replica.get('counter');
+        assert(counter1 === counter2, 'This never throws!');
+        return [null, [counter1, counter2]];
+    }
+```
+
+the assertion **never** throws. The values of `counter1` and `counter2` are always the same!
+
+And a transactional plugin makes updates atomic, and externally consistent. For example, changing `__ca_pulse__` to
+
+```js {5-8}
+    async __ca_pulse__() {
+        if (isAdmin(this)) {
+            const $$ = this.$.sharing.$;
+            const counter = $$.primary.get('counter');
+            $$.primary.set('counter', counter + 1);
+            await setTimeoutPromise(1000);
+            $$.primary.set('counter2', counter + 2);
+            this.$.session.notify([counter + 1,  counter + 2])
+        }
+        return [];
+    },
+```
+
+the value of `counter2` will **always** be seen by readers as one more than the value of `counter`. And if a client receives the notification, it means that there is a checkpoint of a *SharedMap* capturing the new update. Note that this does not mean that replicas received the update, but they will eventually receive it...
+
+
+Another important advantage of *SharedMaps* is **silent updates**. When the `counter` increments, readers do **not** process a request to update their state, and instead, the update just changes shared memory. One memory update shared by thousands of CAs in the same process. That's so much faster than individual requests!
+
+
+#### Updating Code
+
 
 </DocsSection>
 
