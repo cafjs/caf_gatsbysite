@@ -1041,6 +1041,97 @@ Prefer the *Trusted Bus* over external interaction. It is no longer your code ma
 
 #### Aggregate Rules
 
+To describe a dynamic policy, potentially shared by many CAs, *Caf.js* uses a *SharedMap*.
+
+A *SharedMap*  is a replicated Distributed Data Structure (DDS) that can only be written by its owner. We describe *SharedMap* <Link to="#sharedmap">here</Link>.
+
+For example, assuming that each owner has a CA named `admin` that maintains policy for all its CAs:
+
+```js
+const caf = require('caf_core');
+const ADMIN_CA = 'admin';
+const ADMIN_MAP = 'primaryACL';
+const isAdmin = function(self) {
+    const name = self.__ca_getName__();
+    return (caf.splitName(name)[1] === ADMIN_CA);
+};
+const primaryMap = function(self) {
+    const name = self.__ca_getName__();
+    return caf.joinName(caf.splitName(name)[0], ADMIN_CA, ADMIN_MAP);
+};
+exports.methods = {
+    async __ca_init__() {
+        this.state.counter = 0;
+        isAdmin(this) && this.$.sharing.addWritableMap('acl', ADMIN_MAP);
+        this.$.sharing.addReadOnlyMap(
+            'aclAgg', primaryMap(this), {isAggregate: true}
+        );
+        const rule = this.$.security.newAggregateRule(
+            'getCounter', 'aclAgg'
+        );
+        this.$.security.addRule(rule);
+        return [];
+    },
+    async changePolicy(principal, isAllowed) {
+        if (isAdmin(this)) {
+            const $$ = this.$.sharing.$;
+            if (isAllowed) {
+                $$.acl.set(principal, true);
+            } else {
+                $$.acl.delete(principal);
+            }
+            return [];
+        } else {
+            return [new Error('Not an admin')];
+        }
+    },
+    async getCounter() {
+        this.$.log && this.$.log.debug('getCounter()')
+        return [null, this.state.counter];
+    }
+};
+caf.init(module);
+```
+
+Each CA:
+
+* Finds the name of the *SharedMap* managed by the owner's `admin` CA.
+* Creates a read-only replica.
+* Sets an access control rule based on that replica.
+
+In addition, each `admin` CA:
+
+* Creates a writable *SharedMap* to maintain the set of principals allowed to access the method `getCounter()`.
+* Provides a `changePolicy()` method to update this *SharedMap*. Only the owner of the `admin` CA can invoke this method.
+
+Principals can be a CA name, like `foo-ca1`, but also the name of a CA owner, such as `foo`. For the latter case, all the CAs owned by `foo` will be allowed.
+
+##### Delegation
+
+Maintaining the quickly changing membership of a large group is a team effort.
+
+```js
+const LINK_KEY = '__link_key__';
+exports.methods = {
+    \\ after changePolicy()
+    async linkNamespace(ns, isAllowed) {
+        if (isAdmin(this)) {
+            const $$ = this.$.sharing.$;
+            const all = new Set($$.acl.get(LINK_KEY) || []);
+            isAllowed ? all.add(ns) : all.delete(ns);
+            $$.acl.set(LINK_KEY, [...all]);
+            return [];
+        } else {
+            return [new Error('Not an admin')];
+        }
+    },
+    \\ before getCounter()
+}
+```
+
+#### Learn More
+
+
 </DocsSection>
 
 <DocsSection id="sharedmap">
