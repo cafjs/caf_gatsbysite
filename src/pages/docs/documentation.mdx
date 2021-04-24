@@ -1253,6 +1253,54 @@ Another important advantage of *SharedMaps* is **silent updates**. When the `cou
 
 #### Updating Code
 
+*SharedMaps* can contain serialized methods, set with the method `setFun()`, and that transforms a *SharedMap* into a custom replicated object.
+
+There are serious security implications of using `eval` to instantiate these methods, and *Caf.js* delays instantiation until the first call to `applyMethod()`. Moreover, the option `{noExec: true}` for `addReadOnlyMap()` disables instantiation forever.
+
+Never execute untrusted code. *Caf.js* is **not** designed to protect your app from it. But the enforcement of the single-writer policy, together with the naming convention, authenticates the origin of a *SharedMap* custom method.
+
+A *SharedMap* can be replicated in an IoT device, or in the browser. This makes serialized methods a convenient way to dynamically update code everywhere. For example, end users can safely upload their own code to your app in the Cloud, and then execute it only in their own Raspberry Pi, without compromising multi-tenancy in your application. See [HelloDynamic](https://github.com/cafjs/caf_hellodynamic.git) for an example of programmable gesture detection.
+
+Transactional updates guarantee that changes to both data and code are always in sync. For example, you can create getters and setters that understand the internal schema of your *SharedMap*, and, whenever the schema changes, your helper methods will change too, matching the new schema. Never worry about data versioning again!
+
+Let's show an example:
+
+```js
+// isAdmin() and primaryMap() similar to previous example
+exports.methods = {
+    async __ca_init__() {
+        if (isAdmin(this)) {
+            this.$.sharing.addWritableMap('primary', ADMIN_MAP);
+        }
+        this.$.sharing.addReadOnlyMap('replica', primaryMap(this));
+        return [];
+    },
+    async install(base) {
+        if (isAdmin(this)) {
+            const $$ = this.$.sharing.$;
+            $$.primary.set('base', base);
+            const body = "return prefix + (this.get('base') + Math.random());";
+            $$.primary.setFun('computeLabel', ['prefix'], body);
+            return [];
+        } else {
+            return [new Error('Cannot write to SharedMap')];
+        }
+    },
+    async getLabel(prefix) {
+        try {
+            const $$ = this.$.sharing.$;
+            return [null, $$.replica.applyMethod('computeLabel', [prefix])];
+        } catch (err) {
+            return [err];
+        }
+    }
+};
+caf.init(module);
+```
+In this example, calling `install` by the `admin` owner creates a new *SharedMap* with a field `base`, and a method `computeLabel`. This method takes an argument `prefix`, looks up the key `base` in the `SharedMap`, obtains a random number, and adds them all up.
+
+The first time we call `getLabel()`, *Caf.js* calls `eval` with the serialized method `computeLabel`, and binds it to the *SharedMap* replica. Later invocations are much faster, since we only need to call `eval` when the method changes.
+
 
 </DocsSection>
 
