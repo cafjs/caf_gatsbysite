@@ -1765,6 +1765,44 @@ You can see the jsdoc documentation <Link to="/apis">here</Link>
 <DocsArticle id="tools">
 
 # Tools
+<DocsSection id="cafjs-tool">
+
+## cafjs
+
+`cafjs` is a wrapper to all our command line tools.
+
+Type `cafjs help` for an overview of the subcommands, and, for example, `cafjs device --help` for a description of the `device` subcommand options.
+
+A detailed description of `cafjs` can be found in <Link to="../../apis/#caf_dcinabox">here</Link>
+
+Let's enumerate the most important subcommands, and link to usage examples in this documentation.
+
+*  `run`  sets up a simulated cloud with Docker containers, mounts a local volume or an image with your app, and then starts it. <Link to="#install">Example</Link>.
+*  `install` installs all the workspace packages for your app. <Link to="#headless-example">Example</Link>.
+*  `build` builds an application using local dependencies. <Link to="#install">Example</Link>.
+*  `reset` brute force clean-up of docker containers and virtual networks. <Link to="#install">Example</Link>.
+*  `device` simulates a device. <Link to="#add-device">Example</Link>.
+*  `mkImage` builds a Docker image from a packed app or directory. <Link to="#cafjs-cloud">Example</Link>.
+*  `generate` creates an skeleton app using a template. <Link to="#headless-example">Example</Link>.
+*  `update` pulls the current core Docker images. <Link to="#install">Example</Link>.
+
+#### Local Multi-host Deployment
+
+To attach a real device to a local *Caf.js* deployment, the network interface that `cafjs run` uses has to change. By default, the Docker containers use local IP addresses, which are not accessible outside your laptop.
+
+Another difficulty is obtaining a wildcard domain for your external interface. In the default case *Caf.js* uses `vcap.me`, which redirects `*.vcap.me` to the local IP address `127.0.0.1`.
+
+For external IP addresses, `cafjs run` internally uses the `xip.io` service, which redirects `*.192.168.1.15.xip.io` to `192.168.1.1`. Assuming that this address is your laptop external IP address, `192.168.1.15.xip.io` is your new wildcard domain.
+
+What about `https`? In most cases you don't need it for development. For example, to enable WebXR APIs that need `localhost` or `https`, we use instead the Chrome developer tools that provide local port forwarding, and then connect the Oculus headset, or Android phone, to the laptop USB port. And now we can use a wildcard domain based on localhost, as shown in <Link to="three-way-isomorphic"> Three-way Isomorphic</Link>.
+
+But if you really need `https`, you need a wildcard certificate, or a service like [ngrok](https://ngrok.com), and configure the `APP_SUFFIX` property with your new wildcard domain.
+
+Let's go back to the simpler `http` case.
+
+
+
+</DocsSection>
 
 </DocsArticle>
 <DocsArticle id="resources">

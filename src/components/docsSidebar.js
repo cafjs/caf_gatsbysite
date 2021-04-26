@@ -85,6 +85,7 @@ const DocsSidebar = () => {
                 <Nav.Item className="nav-item section-title mt-3">
                   <Nav.Link className="scrollto" href="#tools"><FontAwesomeIcon className="fa-fw" icon={faWrench}/> Tools</Nav.Link>
                 </Nav.Item>
+                <Nav.Item><Nav.Link className="scrollto" href="#cafjs-tool">cafjs</Nav.Link></Nav.Item>
 
                 <Nav.Item className="nav-item section-title mt-3">
                   <Nav.Link className="scrollto" href="#resources"><FontAwesomeIcon className="fa-fw" icon={faBook}/> Resources</Nav.Link>
