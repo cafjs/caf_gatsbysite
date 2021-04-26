@@ -6,380 +6,15 @@ title: Documentation
 
 <DocsContent>
 
-<DocsArticle id="getting-started">
-
-# Getting Started
-
-<DocsSection id="install">
-
-## Install
-
-#### Software Requirements
-
-`node` >= 12 (LTS only), `yarn` >= 1.20, and `docker` >= 19.
-
-We rely on `yarn` workspaces, and `npm` does not support them yet.
-
-Our development is mostly on Linux. Best platform for running `docker` containers.
-
-#### Download
-
-Clone the main repository
-
-```shell
-git clone https://github.com/cafjs/caf.git
-```
-
-Update submodules
-
-```shell
-cd caf; git submodule update --init
-```
-
-Install dependencies
-
-```shell
-yarn run installAll
-```
-
-Add to your path the `cafjs` tool binary
-
-```shell
-export PATH=<your_install_directory>/caf/bin:$PATH
-```
-
-Download the latest `docker` images
-
-```shell
-cafjs update
-```
-
-#### Test
-
-Let's build and run locally a simple app.
-
-
-```shell
-cd apps/caf_helloworld; cafjs build; cafjs run helloworld
-```
-
-With `docker ps` you should see seven running containers. They simulate the support services that we run in the Cloud.
-
-The app launcher URL is http://root-launcher.vcap.me (DNS resolves `*.vcap.me` to `127.0.0.1`, the local loop). Using your browser, login with user `foo` and password `bar`. Then, with the top left menu, click the `+` icon to add a `helloworld` app instance.
-
-Fill the form with:
-
-* App publisher: `root` (in local mode apps are always published by `root`)
-* App name: `helloworld`
-* CA name: anything containing ASCII characters and numbers.
-
-and a `counter` example should appear. Use the `+` again to create other instances, and then switch between them with the top left menu.
-
-To stop it, a single `Control-C` will initiate a gentle container shutdown but, for the impatient, a second `Control-C` will brute force a clean-up. Double tap.
-
-In both cases we should be able to restart without losing the previous state, since the Redis container generates a checkpoint file in the host diretory `/tmp`. Delete this file to start from scratch:
-
-```shell
-sudo rm /tmp/redis/appendonly.aof
-```
-
-Finally, when containers hang, we can always use the nuclear cleanup option
-
-```shell
-cafjs reset
-```
-
-</DocsSection>
-
-<DocsSection id="headless-example">
-
-## Your First App
-
-Let's create a simple app with no front end.
-
-*Caf.js* is managed as a monorepo using `yarn` workspaces. Anything under the sub-directory `caf/playground/app` becomes part of the workspace, and we will create the app there.
-
-Using a monorepo has many advantages, but the most important one is that you know what you are getting. When we create a release of *Caf.js* we freeze all our packages, and test them together. Your app will not suffer from semver mistakes due to these packages.
-
-To create the app skeleton we use `cafjs generate`, an application template generator. The default templates are in a Docker image, and it is easy to customize and share your templates by publishing a new image. See  <Link to="#tools">Tools</Link> for details.
-
-```shell
-cd playground; rm -fr app;  cafjs generate myapp cloud ./app
-```
-
-and then install, build, and run. Install is only needed for the first build, to update dependencies in the monorepo.
-
-```shell
-cd app; cafjs install; cafjs build;  cafjs run -d myapp
-```
-
-This time we used the flag `-d` to turn on debugging mode. You should see debug logs in the console. It also opens the debug port `9229`, and you can set breakpoints, and inspect variables, with the Chrome browser developer tools (`chrome://inspect`). The *Redis* instance is also accessible in host port `6380`.
-
-There is no front end, and we use a script in the `util` directory to read state, and subscribe to notifications.
-
-```shell
-cd util; ./client.js --url http://root-myapp.vcap.me bar foo-ca1
-```
-
-What is in the box?
-
-We will use this example to introduce *Caf.js* programming in the <Link to="#concepts">next</Link> section. Let's look at the files in the `lib` directory first:
-
-* `rsa_pub.pem` A dummy public key to validate authentication tokens in a local deployment. When you deploy your app in the *Caf.js Cloud*, we swap this key by the "real" one.
-* `framework++.json` Describes changes to the baseline platform configuration in <Link to="../../apis/#caf_platform">framework.json</Link>.
-* `ca++.json` Describes changes to the baseline cloud assistant configuration in <Link to="../../apis/#caf_ca">ca.json</Link>.
-* `ca_methods.js` Your code.
-
-To understand the json files have a look at our <Link to="#components">component model</Link>. Sections <Link to="#cloud-assistant">Cloud Assistant</Link> and <Link to="#autonomous">Autonomous Computation</Link> cover `ca_methods.js`. The script is explained in the <Link to="#client">Client Library</Link>.
-
-</DocsSection>
-
-<DocsSection id="add-react-frontend">
-
-## Add a React User Interface
-
-Let's add a *React* front end to the previous app.
-
-```shell
-cd playground; rm -fr app;  cafjs generate myapp web ./app
-```
-and again:
-
-```shell
-cd app; cafjs install; cafjs build;  cafjs run -d myapp
-```
-
-and now, as we did for testing the <Link to="#install">installation</Link>, login with the browser, and create a few instances with app name `myapp`, and `root` publisher, since we are in local mode.
-
-The app uses <Link to="/autonomous">Proactive Server Side Rendering (PSSR)</Link> for fast app switching. The json files add the required <Link to="../../apis/#caf_react">React plugin</Link>.  In `ca_methods.js` there is also a new method `hello()`, which provides the cache key for rendering, and a few calls to the new plugin. Without PSSR the cloud code would look similar to the previous example.
-
-The code in `public` is mostly a standard `React` app, which uses `redux` to manage state, and `react-bootstrap` components to build the UI.
-
-The only novelty is a session object to connect to a cloud assistant in `AppSession.js`, binding actions to remote methods in `AppActions.js`, and a custom initialization in `app.js`.
-
-These are **not** hard dependencies. This is just an example integrating *Caf.js* with a front end, using libraries that we are familiar with. There are no *Caf.js* dependencies with `react-bootstrap`. Replacing `redux` by another state management solution just needs a simple integration with the client library, similar to `AppActions.js`. For PSSR, replacing `React` by another framework would require a new plugin though.
-
-
-</DocsSection>
-
-<DocsSection id="cafjs-cloud">
-
-## Caf.js Cloud
-
-If you are self-hosting your apps, skip this section.
-
-The *Caf.js Cloud* is currently in beta, and this section is likely to change.
-
-#### Requirements
-
-Create a *Caf.js Cloud* account [here](https://root-launcher.cafjs.com).
-
-Login and create an instance of the [Turtles](https://github.com/cafjs/caf_turtles.git) deployer (app publisher `root`, app name `turtles`, choose any name for your instance).
-
-To publish a **public** `Docker` image containing your app, you need an account on a public Docker registry. For example, [Docker Hub](https://hub.docker.com),  [GitHub Container Registry](https://docs.github.com/en/packages/guides/about-github-container-registry), and [GitLab Container Registry](https://docs.gitlab.com/ee/user/packages/container_registry/), they all have free plans. We use internally the [Google Container Registry](https://cloud.google.com/container-registry).
-
-If you do not have a registry account, but just want to try `Turtles`, the image for this example is `gcr.io/cafjs-k8/root-webexample`.
-
-#### Deploy
-
-Let's create an image with the previous app. Change the image name prefix to match your registry provider.
-
-```shell
-cd playground/app; cafjs mkImage . gcr.io/cafjs-k8/root-webexample
-```
-
-Ensure that it runs fine before uploading
-
-```shell
-cafjs run --appImage gcr.io/cafjs-k8/root-webexample myapp
-```
-
-and then create local instances as before.
-
-Now we are ready to upload the image
-
-```shell
-docker push gcr.io/cafjs-k8/root-webexample
-```
-
-Login to *Caf.js Cloud* `https://root-launcher.cafjs.com` using a browser.
-
-And then, to go live, you need to do two things:
-
-* Register the app with the top left menu.
-* Deploy with `Turtles`.
-
-When you register this app, choose a name, a plan, and the percentage of profit that you want to make. Based on that your app gets a price in subscription-days per unit. A unit is 10 cents plus fees. See section <Link to="../../hosting">Caf.js Cloud</Link> for details.
-
-To deploy with `Turtles` use the previous app and image names. Set `Disable CDN` to `On`, unless you have configured your own CDN in the image. You can also set environment properties for your app. We use properties to configure secrets since images are always public.
-
-Check the status of your app (assuming your username is `antonio`, and the app name is `mycoolapp`)
-
-```shell
-curl https://antonio-mycoolapp.cafjs.com/ping
-```
-
-and monitor its performance with
-
-```shell
-curl https://antonio-mycoolapp.cafjs.com/stats
-```
-
-After a few seconds, you, and **every other user**, can create an instance of your app with the top-left menu, using your username `antonio` as publisher, and the previous app name `mycoolapp`.
-
-And when they do, you **keep getting units** for as long as they use your app.
-
-Maintaining a registered app costs one unit per week. Do not forget to **delete** the app with `Turtles`, **and unregister** it with the top left menu, when you are done.
-
-With the `People` app, you can view stats for your registered apps, your active cloud assistants, or the current unit balance. You can also use this app to buy more units, or send/receive units to/from other users. This app is free and always installed.
-
-</DocsSection>
-
-<DocsSection id="add-device">
-
-## Add a Simulated Device
-
-#### Software Requirements
-
-When *Caf.js* simulates a device, it creates images for an ARM processor, and executes ARM binaries. The goal is to be as close as possible to the real thing.
-
-To do that, install in your Linux box the `qemu-user-static` and `binfmt` modules. For example, in Ubuntu:
-
-```shell
-sudo apt-get update && sudo apt-get install -y qemu-user-static binfmt-support
-```
-#### IoT Device App
-
-Let's create an app that provides a <Link to="/permanent">permanent presence</Link> for an IoT device.
-
-```shell
-cd playground; rm -fr app;  cafjs generate myapp iot ./app
-```
-and then install, build, and run.
-
-```shell
-cd app; cafjs install; cafjs build;  cafjs run -d myapp
-```
-
-The [Gadget](https://github.com/cafjs/caf_gadget.git) app manages IoT devices. Login with the local URL http://root-launcher.vcap.me and create a `Gadget` instance with publisher `root` and app name `gadget`. The instance name should match the name of the device, for example, `device1`.
-
-Create an instance of `myapp` (publisher is always `root` in local deployment), ensure that the instance name matches the device name, i.e., `device1`.
-
-Go back to the `Gadget` instance and set the app name to `root-myapp`. This app does not need privileged mode, but most do, as the pop-up warning explains. You can also set environment properties for the `node.js` process running in the device.
-
-After `Update` you should see `Token=yes` because we created the app after the `Gadget` instance. If that is not the case, just go back to the app, and the token will transparently propagate.
-
-Now we are ready to start the simulated device in another console. Note that the name of the device should be `device1`.
-
-```shell
-cafjs device -d foo-device1
-```
-
-The first thing the new device does is to download from its `Gadget` instance a Docker image spec for the current app. Building this ARM image takes about a minute in my laptop, but images are cached in the host, and only rebuild when the spec changes. Then, it starts the app in a container.
-
-Since we started the app with `-d` (debug mode), you should see the debug logs in the console. If you go back to the instance of `myapp`, and click `Do it!`, you should see in the log `setPin` set to `true`, and about a second later, `setPin` set to `false`. That's our blink.
-
-Debug mode also opens port `9230` for attaching the Chrome browser developer tools. The catch is that the source path inside the container is `/usr/src/app/lib`, different from the host path. To set breakpoints, use this path when loading files.
-
-With three instances of the developer tools we can set breakpoints in the front end, the simulated cloud (port `9229`), and the simulated device (port `9230`).
-
-What has changed inside the box?
-
-We have a new directory `iot` with code that runs in the device. Two important files inside `iot/lib`:
-
-* `iot++.json` Describes changes to the baseline IoT device configuration in <Link to="../../apis/#caf_iot">iot.json</Link>.
-* `iot_methods.js` Your code.
-
-Section <Link to="#iot-device">IoT Device</Link> covers `iot_methods.js`.
-
-In `lib/*.json` we have added a new <Link to="../../apis/#caf_iot">IoT</Link> plugin. Also, `ca_methods.js` has new methods called by the device, and `hello()` propagates the authentication token to the `Gadget` app.
-
-</DocsSection>
-
-<DocsSection id="raspberry-pi">
-
-## Add a Raspberry Pi
-
-#### Requirements
-
-Raspberry Pi 3/4 with a modern (2020 or later) Raspberry Pi OS.
-
-Install in the RPi both *Docker* and the *Caf.js* management daemon, as described in <Link to="../../apis/#caf_rpi">here</Link>.
-
-For this discussion we assume *Caf.js Cloud* hosting. It is also possible to integrate an RPi with a local deployment by using the laptop external IP address, and not the local loop address. See <Link to="#tools">Tools</Link> for details.
-
-#### IoT Device App
-
-Deploy the previous `myapp` in the Cloud. See <Link to="#cafjs-cloud"> Caf.js Cloud</Link>.
-
-When the name of the device is, for example, `antonio-device1`, both the `Gadget` and `myapp` instance names should be `device1`.
-
-After that, the experience should be similar to the simulated case. But instead of printing log messages, the GPIO pin in the RPi should turn on and off, blinking a light, or making a sound, based on what is connected to the GPIO pins.
-
-
-</DocsSection>
-
-<DocsSection id="three-way-isomorphic">
-
-## Three-way Isomorphic
-
-We discussed the benefits of a three-way isomorphic framework <Link to="/permanent#three-way">here</Link>.
-
-
-#### Requirements
-
-We tested this app with a [Puck.js](https://www.puck-js.com/), a programmable Bluetooth beacon. This beacon is very easy to program using JavaScript, and we can add GATT services and advertisements with a few lines of code. See [HelloPuck](https://github.com/cafjs/caf_hellopuckjs.git) for details.
-
-If you do not have a `Puck.js`, you should be able to easily adapt this example to other Bluetooth devices. Configure GATT services and characteristics in `lib/ca++.json`. Change payload types in `iot/lib/iot_methods.js`.
-
-The Web Bluetooth API is supported by the *Chrome* browser in both Android and desktop platforms. *Firefox* or *Safari* will not work. For *Apple iOS* we have sucessfully run simple examples with the [WebBLE](https://apps.apple.com/us/app/webble/id1193531073) browser, but some code changes are needed. [Bluefy](https://apps.apple.com/us/app/bluefy-web-ble-browser/id1492822055) is another *Apple iOS* browser option.
-
-#### Bluetooth App
-
-Let's build a three-way isomorphic Bluetooth app with *Caf.js*.
-
-```shell
-cd playground; rm -fr app;  cafjs generate myapp iotbrowser ./app
-```
-
-and then install, build, and run.
-
-```shell
-cd app; cafjs install; cafjs build;  cafjs run -d myapp
-```
-
-With *Chrome*, login and create an instance of `myapp` with publisher `root`, app name `myapp`, and instance name `puck1`.
-
-Switch the `Browser Daemon` option to `on`. It will create a tab with a new hostname `http://root-myapp.localhost:3003/`. Chrome allows subdomains for `localhost`, and port `3003` provides direct access to `myapp`. The Web Bluetooth API requires `https` or `localhost`. It is also blocked inside a cross-origin iframe. By spawning the iframe into its own page, with a new hostname, we avoid these limitations.
-
-Click `Find`, then `Click to Pair`, select the compatible device, and then confirm. After that, blink the `Puck.js` light, or click the physical `Puck.js` button to start receiving notification from the beacon. Sharing a URL allows someone remote to interact with the beacon, see <Link to="/permanent">Permanent Presence</Link>.
-
-The simulated device runs inside the iframe `index-iot.html`, with the same origin as the top context. Using the *Chrome* developer tools we can debug device code by targeting this iframe.
-
-What about isomorphic?
-
-We can deploy this app unchanged on a Raspberry Pi, see the previous <Link to="#raspberry-pi">section</Link>. Keep the `Browser Daemon` option to `off`. The user interface simplifies, with fewer clicks, but the overall functionality is similar.
-
-Note that you should use a different instance name, matching the Raspberry Pi name, for example, `rpi1` instead of `puck1`. Never reuse an instance name for both browser and RPi.
-
-And this application also executes device code in the Cloud, introspecting device methods in the <Link to="../../apis/#caf_iot">IoT plugin</Link>.
-
-Some important code changes:
-
-* Modify the build system in `bin/build.sh` to `browserify` device code.
-* Introduce `iot/lib/main-shim.js` as the new entry point for the device in the browser.
-* Spawn a page that executes device code in an iframe (`public/js/components/Finder.js`).
-* Add a <Link to="../../apis/#caf_iot_gatt">Bluetooth plugin</Link> in `iot/lib/iot++.json`.
-* Add a React app for remote interaction in `public/user`.
-
-</DocsSection>
-
-</DocsArticle>
 
 
 <DocsArticle id="concepts">
 
 # Concepts
+
+If you prefer to get into coding quickly, read <Link to="#cloud-assistant">Cloud Assistant</Link> first, and then <Link to="#install">Install</Link> and <Link to="#headless-example">First App</Link>.
+
+To see the big picture first, keep on reading...
 
 <DocsSection id="components">
 
@@ -614,7 +249,7 @@ A CA serializes requests with a queue. Before processing the next request in the
 
 Serialization does not reduce performance. There could be thousands of CAs in a single process, and blocking one of them does not affect the others, since each CA has its own queue, and its state is private.
 
-And serialization in *Caf.js* is a cluster-wide property. Servers can fail, with hundreds of processes spread across many servers running your app, but CA requests will always be processed one after another.
+And serialization in *Caf.js* is a **cluster-wide** property. Servers can fail, with hundreds of processes spread across many servers running your app, but CA requests will always be processed one after another.
 
 What is the Big Deal?
 
@@ -701,19 +336,19 @@ The internal state of a CA is always consistent with its external commitments.
 
 This sounds a bit abstract, let's give an example to clarify what we mean.
 
-*Caf.js* uses a transactional plugin, `session`, to send events to clients. We will talk about sessions in the <Link to="#autonomous">next</Link> section but, for this discussion, it is just a plugin with external side-effects.
+*Caf.js* uses a transactional plugin, `session`, to send notifications to clients. We will talk about sessions in the <Link to="#autonomous">next</Link> section but, for this discussion, it is just a plugin with external side-effects.
 
-Calling `increment()` adds one to `this.state.counter`, and sends a new event with the new counter.
+Calling `increment()` adds one to `this.state.counter`, and sends a notification with the new counter.
 
 What happens when the counter exceeds `100`? It returns an error, aborting the transaction, and `this.state.counter` rolls back to `100`.
 
-But what about the event? The external world saw that the internal state is `101`, but that is inconsistent with the current value of `100`.
+But what about the notification? The external world saw that the internal state is `101`, but that is inconsistent with the current value of `100`.
 
-And this is also a problem for smaller values. If we send the event, and then the server crashes **before** checkpointing, the state update is lost forever. And the world saw the new value.
+And this is also a problem for smaller values. If we send the notification, and then the server crashes **before** checkpointing, the state update is lost forever. And the world saw the new value.
 
 In most frameworks the missile has already launched, and there is not much we can do about it.
 
-But in *Caf.js* we use transactional plugins to externalize state changes. For example, when we call `this.$.session.notify()`, the plugin just appends to a log our intent to send the event, but it does **not** sent it. Only when the request commits, and the log of actions and the state changes have been checkpointed, the event is sent.
+But in *Caf.js* we use transactional plugins to externalize state changes. For example, when we call `this.$.session.notify()`, the plugin just appends to a log our intent to send the notification, but it does **not** sent it. Only when the request commits, and the log of actions and the state changes have been checkpointed, the notification is sent.
 
 Transactional plugins **compose** using a two-phase commit protocol. We can mix plugins from different providers, and commit them atomically, or abort all of them if one cannot commit. But this happens behind the scenes, application code does not see this complexity.
 
@@ -1297,7 +932,7 @@ exports.methods = {
 };
 caf.init(module);
 ```
-In this example, calling `install` by the `admin` owner creates a new *SharedMap* with a field `base`, and a method `computeLabel`. This method takes an argument `prefix`, looks up the key `base` in the `SharedMap`, obtains a random number, and adds them all up.
+In this example, calling `install` by the `admin` owner initializes a  *SharedMap* with a field `base`, and a method `computeLabel`. This method takes an argument `prefix`, looks up the key `base` in the `SharedMap`, obtains a random number, and adds them all up.
 
 The first time we call `getLabel()`, *Caf.js* calls `eval` with the serialized method `computeLabel`, and binds it to the *SharedMap* replica. Later invocations are much faster, since we only need to call `eval` when the method changes.
 
@@ -1308,11 +943,813 @@ The first time we call `getLabel()`, *Caf.js* calls `eval` with the serialized m
 
 ## Publish-Subscribe
 
+*Caf.js* supports a traditional publish-subscribe communication pattern. There are two kinds of topics:
+
+* **Private** topics where only one CA can publish, but anybody can subscribe to receive them. The name of the topic is prefixed by the CA name. For example, if the owner CA name is `foo-ca1`, a valid private topic is `foo-ca1-mynews`.
+* **Forum** topics where anybody can publish or subscribe to. They always have the prefix `forum-`, for example, `forum-othernews`.
+
+Subscribers dedicate a method for handling messages. It is recommended that this method is  internal, i.e., prefixed by `__ca_`, and therefore, it is always invoked by the *Trusted Bus*.
+
+The signature for this method is `async function(topic, msg, from)`,  with fields:
+
+* `topic: string` needed to multiplex a method for several topics.
+* `msg: string` received message, typically JSON-serialized.
+* `from: string` authenticated publisher name. Needed because the method `this.$.security.getCallerFrom()` does not provide the real caller for internal methods.
+
+Filtering of publishers is based on setting *Trusted Bus* policies for this method, or using the authenticated `from` argument to change behavior.
+
+*Publish-subscribe* and *SharedMap* are typically used together. Publish is best effort, and  *SharedMaps* can be used to acknowledge important messages. Or a *SharedMap* can update the state of many CAs first, including code, and a later published message trigger actions using the new state.
+
+Point-to-point messaging can be emulated with private topics. Point-to-point is **the root of all evil** regarding scalability. At the network level, it always creates an all-to-all communication pattern in actor systems. Try to abstract communication with higher level services, such as *Publish-subscribe* or *SharedMap*, and limit point-to-point to where it is strictly necessary.
+
+Let's show an example:
+
+```js
+const caf = require('caf_core');
+const ADMIN_CA = 'admin';
+const ADMIN_CHANNEL = 'myNews';
+const isAdmin = function(self) {
+    const name = self.__ca_getName__();
+    return (caf.splitName(name)[1] === ADMIN_CA);
+};
+const primaryChannel = function(self) {
+    const name = self.__ca_getName__();
+    return caf.joinName(caf.splitName(name)[0], ADMIN_CA, ADMIN_CHANNEL);
+};
+exports.methods = {
+    async __ca_init__() {
+        this.state.counter = 0;
+        this.$.pubsub.subscribe(primaryChannel(this), '__ca_handleMessage__');
+        return [];
+    },
+    async __ca_pulse__() {
+        if (isAdmin(this)) {
+            this.state.counter = this.state.counter + 1;
+            this.$.pubsub.publish(primaryChannel(this),
+                                  `Counter: ${this.state.counter}`);
+        }
+        return [];
+    },
+    async __ca_handleMessage__(topic, msg, from) {
+        this.$.log && this.$.log.debug(`Got ${msg} from ${from}`);
+        this.$.session.notify([msg]);
+        return [];
+    }
+};
+caf.init(module);
+```
+
+The `admin` CA periodically publishes a counter, which any other CA with the same owner subscribes to. The response to a received message is to queue a client notification.
+
+Note that the `pubsub` plugin is transactional, and respects external consistency. This means that when `__ca_pulse__` publishes a new counter, the checkpointed  state of this CA already reflects the new counter.
+
 </DocsSection>
 
 <DocsSection id="iot-device">
 
 ## IoT Device
+
+In this section we cover the code that you write under the `./iot` directory. Bridging code that runs in the browser, or in a Raspberry Pi, or in an ARM container during development. See <Link to="#add-device">Simulated Device</Link> for an introduction.
+
+#### Caf.js Lite
+
+The platform running your IoT device code is a simplified version of the one that runs CAs. We call it *Caf.js Lite*.
+
+There is at most **one** *CA Lite* instance per *Caf.js Lite* platform. The long term state of this instance is managed by a *Companion CA* in the Cloud.
+
+*Caf.js Lite* does not checkpoint. A device restart resets the *CA Lite* state, and then, it contacts its *Companion CA* for instructions and data.
+
+Without local long term state, consistency is less of a concern. And some plugins are not transactional, interacting directly with the device to improve latency.
+
+We kept some *CA* features. Method execution serialized by a queue. An error rollbacks changes to `this.state`. Hierarchies of components configured with JSON descriptions. Plugins accessed with `this.$`. Support for *SharedMaps*...
+
+In *Caf.js Lite*, configuration is simpler. There is only one JSON file, `iot.json`, which merges the functionality of `framework.json` and `ca.json`.
+
+We also made explicit that *Caf.js Lite* is not *Caf.js* by renaming some methods. For example, paying homage to *Arduino*, `__ca_init__` becomes `__iot_setup__`, and `__ca_pulse__` is now `__iot_loop__`.
+
+Complete examples are in [GitHub](https://github.com/cafjs/caf_iot.git).
+
+Let's look at a "Hello World" example first.
+
+The *CA Lite* code in `iot/lib/iot_methods.js`
+
+```js{4,8,11}
+const caf_iot = require('caf_iot');
+exports.methods = {
+    async __iot_setup__() {
+        this.state.counter = this.toCloud.get('counter') || 0;
+        return [];
+    },
+    async __iot_loop__() {
+        const msg = this.fromCloud.get('msg') || 'Counter:';
+        this.$.log && this.$.log.debug(msg + this.state.counter);
+        this.state.counter = this.state.counter + 1;
+        this.toCloud.set('counter', this.state.counter);
+        return [];
+    }
+};
+caf_iot.init(module);
+```
+
+and the *Companion CA* implementation in `lib/ca_methods.js`:
+
+```js{8,13}
+const caf = require('caf_core');
+exports.methods = {
+    async __ca_init__() {
+        return [];
+    },
+    async setMessage(newMsg) {
+        const $$ = this.$.sharing.$;
+        $$.fromCloud.set('msg', newMsg);
+        return this.getCounter();
+    },
+    async getCounter() {
+        const $$ = this.$.sharing.$;
+        return [null, $$.toCloud.get('counter')];
+    }
+};
+caf.init(module);
+```
+
+What are `this.toCloud` and `this.fromCloud`? Two <Link to="#sharedmap">SharedMaps</Link> that every *CA Lite* has. They are both managed in the Cloud by the *Companion CA*, but by convention:
+
+* `this.toCloud` can only be written by the *CA Lite*, and read by both the *CA Lite* and its *Companion CA*.
+* `this.fromCloud` written by the *Companion CA*, and read by the *CA Lite*.
+
+How does it work? After processing a request, the *CA Lite* syncs its state with the *Companion CA*. Local changes to `this.toCloud` are uploaded, and then applied to its primary *SharedMap* in the Cloud. The local replica of `this.fromCloud` gets updated too.
+
+By having both primaries in the Cloud, they are always checkpointed, and managed with transactions. And sensor data from one device can be easily shared by creating more replicas of `this.toCloud`.
+
+Syncing every request with the Cloud is sometimes too costly. Skip the sync with the option `{noSync: true}` for `cron` tasks, or for requests explicitly created with the `this.$.queue` plugin.
+
+Going back to the example. During initialization, the last `counter` value is read from `this.toCloud`. Authorized clients can also get it with the `getCounter()` method, which reads from the same `this.toCloud`.
+
+In the other direction, the value of `msg` is set by the *Companion CA* in `setMessage()`, which writes to `this.fromCloud`. After sync, the device changes the log message in `__iot_loop__`, also using `msg`.
+
+#### *Companion CA* Hooks
+
+```js
+const caf = require('caf_core');
+exports.methods = {
+    async __ca_init__() {
+        // methods called by the iot device
+        this.state.trace__iot_sync__ = '__ca_traceSync__';
+        this.state.trace__iot_resume__ = '__ca_traceResume__';
+        return [];
+    },
+    // called when the device syncs state
+    async __ca_traceSync__() {
+        const now = (new Date()).getTime();
+        this.$.log.debug('Syncing!!:' + now);
+        return [];
+    },
+    // called when the device reconnects
+    async __ca_traceResume__() {
+        const now = (new Date()).getTime();
+        this.$.log.debug('Resuming!!:' + now);
+        return [];
+    }
+};
+caf.init(module);
+```
+
+The *Companion CA* can schedule an action when the *CA Lite* connects, or syncs state  with it. Just define two hook methods, typically called `__ca_traceSync__` and `__ca_traceResume__`.
+
+#### Cron Tasks
+
+```js{8-9,19-23}
+const caf_iot = require('caf_iot');
+const util = require('util');
+const setTimeoutPromise = util.promisify(setTimeout);
+exports.methods = {
+    async __iot_setup__() {
+        const options = {noSync: true};
+        this.state.counter = this.toCloud.get('counter') || 0;
+        this.$.cron.addCron('helloCron', 'greetings', ['Hello:'], 2000, options);
+        this.$.cron.addCron('byeCron', 'greetings', ['Bye:'], 3000, options);
+        return [];
+    },
+    async __iot_loop__() {
+        const msg = this.fromCloud.get('msg') || 'Counter:';
+        this.$.log && this.$.log.debug(msg + this.state.counter);
+        this.state.counter = this.state.counter + 1;
+        this.toCloud.set('counter', this.state.counter);
+        return [];
+    },
+    async greetings(greet) {
+        const now = (new Date()).getTime();
+        this.$.log && this.$.log.debug(greet + now);
+        return [];
+    }
+};
+caf_iot.init(module);
+```
+
+It is easy to create periodic tasks with the `cron` plugin. This example creates two sequences of log entries, using two different prefixes. The first argument to `addCron()` is the name of the `cron`, needed to delete it. In this case, only `__iot_loop__()` syncs with the Cloud.
+
+Note that JavaScript is a garbage-collected language, and it cannot provide hard real-time guarantees. However, in a lightly loaded Raspberry Pi 4, it is reasonable to expect **most of the time** interval time variation within 10 msec, for an interval longer than 100 msec.
+
+If you need better, you could use the `cron` task to configure a microcontroller, well in advance of triggering the action.
+
+#### Error Handling
+
+```js{8,18-28}
+const caf_iot = require('caf_iot');
+const myUtils = caf_iot.caf_components.myUtils;
+const util = require('util');
+const setTimeoutPromise = util.promisify(setTimeout);
+exports.methods = {
+    async __iot_setup__() {
+        this.state.counter = this.toCloud.get('counter') || 0;
+        this.$.cron.addCron('crashCron', 'crash', [], 5000);
+        return [];
+    },
+    async __iot_loop__() {
+        const msg = this.fromCloud.get('msg') || 'Counter:';
+        this.$.log && this.$.log.debug(msg + this.state.counter);
+        this.state.counter = this.state.counter + 1;
+        this.toCloud.set('counter', this.state.counter);
+        return [];
+    },
+    async crash() {
+        await setTimeoutPromise(100);
+        throw new Error('Oops');
+    },
+    // delete this method and see how error handling changes
+    async __iot_error__(error) {
+        this.$.log && this.$.log.warn('Got error ' +
+                                      myUtils.errToPrettyStr(error));
+        // try `return [error]` and see what happens
+        return [];
+    }
+};
+caf_iot.init(module);
+```
+
+The default error handling strategy in *Caf.js Lite* is to log the error, and then do a full reset.
+
+We can change this behavior by adding ` __iot_error__()`, an error handler method.
+
+If ` __iot_error__()` propagates the error in the returned array tuple, *Caf.js Lite* does a full reset, as before. But, when the error is not returned, it is ignored by the runtime, giving you full control.
+
+#### Cloud Client
+
+A device plugin called `cloud` wraps the standard <Link to="#client">Client Library</Link>.
+
+A *CA Lite* can call external methods of the *Companion CA* using this plugin.
+
+It can also receive notifications, using the default session name `iot`, which can be changed in `iot++.json`.
+
+The default behavior for handling a notification is to sync state. However, using the `registerHandler()` method, we can add our own handler. This handler typically creates, using the `queue` plugin, a local request to process the notification.
+
+Let's look at an example:
+
+The *CA Lite* code in `iot/lib/iot_methods.js`
+
+```js{4-7,14}
+const caf_iot = require('caf_iot');
+exports.methods = {
+    async __iot_setup__() {
+        this.$.cloud.registerHandler((msg) => {
+            const args = this.$.cloud.getMethodArgs(msg);
+            this.$.queue.process('greetings', args);
+        });
+        return [];
+    },
+    async greetings(msg) {
+        const now = (new Date()).getTime();
+        this.$.log && this.$.log.debug(msg + now);
+        try {
+            const value = await this.$.cloud.cli.getCounter().getPromise();
+            this.$.log && this.$.log.debug('Got ' + value);
+            return [];
+        } catch (err) {
+            return [err];
+        }
+    },
+    async __iot_loop__() {
+        const now = (new Date()).getTime();
+        this.$.log && this.$.log.debug('loop:' + now);
+        return [];
+    }
+};
+caf_iot.init(module);
+```
+
+and the *Companion CA* implementation in `lib/ca_methods.js`:
+
+```js{10}
+const caf = require('caf_core');
+exports.methods = {
+    async __ca_init__() {
+        this.state.counter = 0;
+        this.state.msg = 'foo:';
+        return [];
+    },
+    async __ca_pulse__() {
+        this.state.counter = this.state.counter + 1;
+        this.$.session.notify([this.state.msg], 'iot');
+        return [];
+    },
+    async setMessage(newMsg) {
+        this.state.msg = newMsg;
+        return this.getCounter();
+    },
+    async getCounter() {
+        return [null, this.state.msg + this.state.counter];
+    }
+};
+caf.init(module);
+```
+
+The *Companion CA* periodically creates a notification with session name `iot`.
+This notification is handled by the *CA Lite* by calling `greetings()`. This method then calls back the *Companion CA* to read the current counter.
+
+#### Timed Bundles
+
+*Warning: do not use **Caf.js** for safety critical applications.*
+
+*Caf.js IoT Device*  was originally created to control **drones** using the Cloud. It was fun, and we learnt a few things in the hard way:
+
+* Losing connectivity, or an increase in latency, meant that a crash was likely.
+* Accurate coordination of more than a few drones was difficult.
+
+To improve reliability and scalability we did four changes:
+
+* Modify the drone firmware to run *Caf.js Lite* locally.
+* Group actions, with relative timing between them, into **bundles**.
+* Start executing a bundle with Coordinated Universal Time (UTC), not just when it arrives. Keep the drone clock synchronized with the Cloud.
+* Execute actions from **at most one** bundle at **any time**.
+
+By bundling actions, once the first action started, the others will follow, regardless of connectivity.
+
+Therefore, a bundle could always leave the drone in a safe state by adding late recovery actions. When the next bundle executes on time, the previous recovery actions are ignored. But, when it does not, the custom recovery actions will take over.
+
+And firing bundles with UTC time meant that the *Companion CA* could pipeline them, caching them in the drone before they were needed, providing smooth movement. But, at the same time, a new bundle could quickly change drone direction, invalidating the previously cached bundle.
+
+Moreover, using UTC time meant that we could now coordinate drone actions across the world, and scale to millions. We just needed millions of *Companion CAs*, using *SharedMaps* to share state, and *Publish-Subscribe* to coordinate,  and a second or two of early warning to customize and propagate the bundles.
+
+You can read all about our world domination ambitions <Link to="../../collaborative">here</Link>. The drones are coming.
+
+In a more serious note, let's show how to code world domination.
+
+The *CA Lite* code in `iot/lib/iot_methods.js`
+
+``` js
+const caf_iot = require('caf_iot');
+exports.methods = {
+    async __iot_setup__() {
+        return [];
+    },
+    async down(speed) {
+        const now = (new Date()).getTime();
+        this.$.log && this.$.log.debug(`vvvvvvvvDown: ${now} speed: ${speed}`);
+        return [];
+    },
+    async up(speed) {
+        const now = (new Date()).getTime();
+        this.$.log && this.$.log.debug(`^^^^^^^^Up: ${now} speed: ${speed}`);
+        return [];
+    },
+    async recover(msg) {
+        const now = (new Date()).getTime();
+        this.$.log && this.$.log.debug(`RECOVERING: ${now} msg: ${msg}`);
+        return [];
+    },
+    async __iot_loop__() {
+        const now = (new Date()).getTime();
+        this.$.log && this.$.log.debug(`loop: ${now}`);
+        return [];
+    }
+};
+caf_iot.init(module);
+```
+
+and the *Companion CA* implementation in `lib/ca_methods.js`:
+
+```js{8,12-13,17-23}
+const caf = require('caf_core');
+// TRY: reduce the margin to <10msec and see how bundles arrive late
+const MARGIN = 100;
+exports.methods = {
+    async __ca_init__() {
+        this.state.counter = 0;
+        this.state.msg = 'foo:';
+        this.state.maxAcks = 1;
+        return [];
+    },
+    async __ca_pulse__() {
+        if ((this.state.acks && (this.state.acks.length > 0) &&
+             (!this.state.acks[0].result))) {
+            this.$.log && this.$.log.debug('Last bundle was late');
+        }
+        this.state.counter = this.state.counter + 1;
+        const bundle = this.$.iot.newBundle(MARGIN);
+        // TRY: kill the server, and the device eventually executes `recover`
+        bundle.down(0, [1]).up(300, [1]).recover(5000, ['go home']);
+        this.$.iot.sendBundle(bundle);
+        // `notify` improves responsiveness.
+        //TRY: comment the following line, and see how bundles arrive late
+        this.$.session.notify([this.state.counter], 'iot');
+        return [];
+    },
+    async setMessage(newMsg) {
+        this.state.msg = newMsg;
+        return this.getCounter();
+    },
+    async getCounter() {
+        return [null, this.state.msg + this.state.counter];
+    }
+};
+caf.init(module);
+```
+
+How to create a *Timed Bundle*? The plugin `iot` provides a `newBundle` method, with an argument to customize the expected propagation time for the bundle. Similar to the construction of a session with the *Client Library*, the plugin introspects the code in `iot_methods.js`, and adds methods for creating individual actions. Relative timing is always in milliseconds.
+
+The `sendBundle()` method freezes the starting UTC time of the bundle, and makes it available to the *CA Lite*. It can also take a starting time offset, to be added to the propagation time.
+
+The *CA Lite* will get the bundle the next time it syncs. It is wise to force it to sync **asap**, by sending a notification to the `iot` session. See the *Cloud Client* previous section for details.
+
+Late bundles are ignored. The *Companion CA* learns that the last bundle was late by setting `this.state.maxAcks` to one, and periodically reading `this.state.acks[0].result`. In robust applications, it will dynamically adjust the propagation margin when that happens.
+
+In some cases we want to execute a bundle when it arrives. For example, in an emergency situation. We can force this behavior by adding the argument `this.$.iot.NOW` to `sendBundle()`.
+
+The problem with `this.$.iot.NOW` is that a month-old bundle, could still trigger an action when we turn on the device. It is recommended to use instead `this.$.iot.NOW_SAFE`, which expires the bundle after a reasonable time limit. The default is ten minutes.
+
+
+#### Learn More
+
+Connect to Bluetooth devices using the <Link to="../../apis/#caf_iot_gatt">gatt</Link> plugin. Switch GPIO pins with <Link to="../../apis/#caf_rpi_gpio">gpio</Link>. Explore *Caf.js Lite* APIs <Link to="../../apis/#caf_iot">here</Link>.
+
+</DocsSection>
+
+</DocsArticle>
+<DocsArticle id="getting-started">
+
+# Getting Started
+
+<DocsSection id="install">
+
+## Install
+
+#### Software Requirements
+
+`node` >= 12 (LTS only), `yarn` >= 1.20, and `docker` >= 19.
+
+We rely on `yarn` workspaces, and `npm` does not support them yet.
+
+Our development is mostly on Linux. Best platform for running `docker` containers.
+
+#### Download
+
+Clone the main repository
+
+```shell
+git clone https://github.com/cafjs/caf.git
+```
+
+Update submodules
+
+```shell
+cd caf; git submodule update --init
+```
+
+Install dependencies
+
+```shell
+yarn run installAll
+```
+
+Add to your path the `cafjs` tool binary
+
+```shell
+export PATH=<your_install_directory>/caf/bin:$PATH
+```
+
+Download the latest `docker` images
+
+```shell
+cafjs update
+```
+
+#### Test
+
+Let's build and run locally a simple app.
+
+
+```shell
+cd apps/caf_helloworld; cafjs build; cafjs run helloworld
+```
+
+With `docker ps` you should see seven running containers. They simulate the support services that we run in the Cloud.
+
+The app launcher URL is http://root-launcher.vcap.me (DNS resolves `*.vcap.me` to `127.0.0.1`, the local loop). Using your browser, login with user `foo` and password `bar`. Then, with the top left menu, click the `+` icon to add a `helloworld` app instance.
+
+Fill the form with:
+
+* App publisher: `root` (in local mode apps are always published by `root`)
+* App name: `helloworld`
+* CA name: anything containing ASCII characters and numbers.
+
+and a `counter` example should appear. Use the `+` again to create other instances, and then switch between them with the top left menu.
+
+To stop it, a single `Control-C` will initiate a gentle container shutdown but, for the impatient, a second `Control-C` will brute force a clean-up. Double tap.
+
+In both cases we should be able to restart without losing the previous state, since the Redis container generates a checkpoint file in the host diretory `/tmp`. Delete this file to start from scratch:
+
+```shell
+sudo rm /tmp/redis/appendonly.aof
+```
+
+Finally, when containers hang, we can always use the nuclear cleanup option
+
+```shell
+cafjs reset
+```
+
+</DocsSection>
+
+<DocsSection id="headless-example">
+
+## Your First App
+
+Let's create a simple app with no front end.
+
+*Caf.js* is managed as a monorepo using `yarn` workspaces. Anything under the sub-directory `caf/playground/app` becomes part of the workspace, and we will create the app there.
+
+Using a monorepo has many advantages, but the most important one is that you know what you are getting. When we create a release of *Caf.js* we freeze all our packages, and test them together. Your app will not suffer from semver mistakes due to these packages.
+
+To create the app skeleton we use `cafjs generate`, an application template generator. The default templates are in a Docker image, and it is easy to customize and share your templates by publishing a new image. See  <Link to="#tools">Tools</Link> for details.
+
+```shell
+cd playground; rm -fr app;  cafjs generate myapp cloud ./app
+```
+
+and then install, build, and run. Install is only needed for the first build, to update dependencies in the monorepo.
+
+```shell
+cd app; cafjs install; cafjs build;  cafjs run -d myapp
+```
+
+This time we used the flag `-d` to turn on debugging mode. You should see debug logs in the console. It also opens the debug port `9229`, and you can set breakpoints, and inspect variables, with the Chrome browser developer tools (`chrome://inspect`). The *Redis* instance is also accessible in host port `6380`.
+
+There is no front end, and we use a script in the `util` directory to read state, and subscribe to notifications.
+
+```shell
+cd util; ./client.js --url http://root-myapp.vcap.me bar foo-ca1
+```
+
+What is in the box?
+
+We will use this example to introduce *Caf.js* programming in the <Link to="#concepts">next</Link> section. Let's look at the files in the `lib` directory first:
+
+* `rsa_pub.pem` A dummy public key to validate authentication tokens in a local deployment. When you deploy your app in the *Caf.js Cloud*, we swap this key by the "real" one.
+* `framework++.json` Describes changes to the baseline platform configuration in <Link to="../../apis/#caf_platform">framework.json</Link>.
+* `ca++.json` Describes changes to the baseline cloud assistant configuration in <Link to="../../apis/#caf_ca">ca.json</Link>.
+* `ca_methods.js` Your code.
+
+To understand the json files have a look at our <Link to="#components">component model</Link>. Sections <Link to="#cloud-assistant">Cloud Assistant</Link> and <Link to="#autonomous">Autonomous Computation</Link> cover `ca_methods.js`. The script is explained in the <Link to="#client">Client Library</Link>.
+
+</DocsSection>
+
+<DocsSection id="add-react-frontend">
+
+## Add a React User Interface
+
+Let's add a *React* front end to the previous app.
+
+```shell
+cd playground; rm -fr app;  cafjs generate myapp web ./app
+```
+and again:
+
+```shell
+cd app; cafjs install; cafjs build;  cafjs run -d myapp
+```
+
+and now, as we did for testing the <Link to="#install">installation</Link>, login with the browser, and create a few instances with app name `myapp`, and `root` publisher, since we are in local mode.
+
+The app uses <Link to="/autonomous">Proactive Server Side Rendering (PSSR)</Link> for fast app switching. The json files add the required <Link to="../../apis/#caf_react">React plugin</Link>.  In `ca_methods.js` there is also a new method `hello()`, which provides the cache key for rendering, and a few calls to the new plugin. Without PSSR the cloud code would look similar to the previous example.
+
+The code in `public` is mostly a standard `React` app, which uses `redux` to manage state, and `react-bootstrap` components to build the UI.
+
+The only novelty is a session object to connect to a cloud assistant in `AppSession.js`, binding actions to remote methods in `AppActions.js`, and a custom initialization in `app.js`.
+
+These are **not** hard dependencies. This is just an example integrating *Caf.js* with a front end, using libraries that we are familiar with. There are no *Caf.js* dependencies with `react-bootstrap`. Replacing `redux` by another state management solution just needs a simple integration with the client library, similar to `AppActions.js`. For PSSR, replacing `React` by another framework would require a new plugin though.
+
+
+</DocsSection>
+
+<DocsSection id="cafjs-cloud">
+
+## Caf.js Cloud
+
+If you are self-hosting your apps, skip this section.
+
+The *Caf.js Cloud* is currently in beta, and this section is likely to change.
+
+#### Requirements
+
+Create a *Caf.js Cloud* account [here](https://root-launcher.cafjs.com).
+
+Login and create an instance of the [Turtles](https://github.com/cafjs/caf_turtles.git) deployer (app publisher `root`, app name `turtles`, choose any name for your instance).
+
+To publish a **public** `Docker` image containing your app, you need an account on a public Docker registry. For example, [Docker Hub](https://hub.docker.com),  [GitHub Container Registry](https://docs.github.com/en/packages/guides/about-github-container-registry), and [GitLab Container Registry](https://docs.gitlab.com/ee/user/packages/container_registry/), they all have free plans. We use internally the [Google Container Registry](https://cloud.google.com/container-registry).
+
+If you do not have a registry account, but just want to try `Turtles`, the image for this example is `gcr.io/cafjs-k8/root-webexample`.
+
+#### Deploy
+
+Let's create an image with the previous app. Change the image name prefix to match your registry provider.
+
+```shell
+cd playground/app; cafjs mkImage . gcr.io/cafjs-k8/root-webexample
+```
+
+Ensure that it runs fine before uploading
+
+```shell
+cafjs run --appImage gcr.io/cafjs-k8/root-webexample myapp
+```
+
+and then create local instances as before.
+
+Now we are ready to upload the image
+
+```shell
+docker push gcr.io/cafjs-k8/root-webexample
+```
+
+Login to *Caf.js Cloud* `https://root-launcher.cafjs.com` using a browser.
+
+And then, to go live, you need to do two things:
+
+* Register the app with the top left menu.
+* Deploy with `Turtles`.
+
+When you register this app, choose a name, a plan, and the percentage of profit that you want to make. Based on that your app gets a price in subscription-days per unit. A unit is 10 cents plus fees. See section <Link to="../../hosting">Caf.js Cloud</Link> for details.
+
+To deploy with `Turtles` use the previous app and image names. Set `Disable CDN` to `On`, unless you have configured your own CDN in the image. You can also set environment properties for your app. We use properties to configure secrets since images are always public.
+
+Check the status of your app (assuming your username is `antonio`, and the app name is `mycoolapp`)
+
+```shell
+curl https://antonio-mycoolapp.cafjs.com/ping
+```
+
+and monitor its performance with
+
+```shell
+curl https://antonio-mycoolapp.cafjs.com/stats
+```
+
+After a few seconds, you, and **every other user**, can create an instance of your app with the top-left menu, using your username `antonio` as publisher, and the previous app name `mycoolapp`.
+
+And when they do, you **keep getting units** for as long as they use your app.
+
+Maintaining a registered app costs one unit per week. Do not forget to **delete** the app with `Turtles`, **and unregister** it with the top left menu, when you are done.
+
+With the `People` app, you can view stats for your registered apps, your active cloud assistants, or the current unit balance. You can also use this app to buy more units, or send/receive units to/from other users. This app is free and always installed.
+
+</DocsSection>
+
+<DocsSection id="add-device">
+
+## Add a Simulated Device
+
+#### Software Requirements
+
+When *Caf.js* simulates a device, it creates images for an ARM processor, and executes ARM binaries. The goal is to be as close as possible to the real thing.
+
+To do that, install in your Linux box the `qemu-user-static` and `binfmt` modules. For example, in Ubuntu:
+
+```shell
+sudo apt-get update && sudo apt-get install -y qemu-user-static binfmt-support
+```
+#### IoT Device App
+
+Let's create an app that provides a <Link to="/permanent">permanent presence</Link> for an IoT device.
+
+```shell
+cd playground; rm -fr app;  cafjs generate myapp iot ./app
+```
+and then install, build, and run.
+
+```shell
+cd app; cafjs install; cafjs build;  cafjs run -d myapp
+```
+
+The [Gadget](https://github.com/cafjs/caf_gadget.git) app manages IoT devices. Login with the local URL http://root-launcher.vcap.me and create a `Gadget` instance with publisher `root` and app name `gadget`. The instance name should match the name of the device, for example, `device1`.
+
+Create an instance of `myapp` (publisher is always `root` in local deployment), ensure that the instance name matches the device name, i.e., `device1`.
+
+Go back to the `Gadget` instance and set the app name to `root-myapp`. This app does not need privileged mode, but most do, as the pop-up warning explains. You can also set environment properties for the `node.js` process running in the device.
+
+After `Update` you should see `Token=yes` because we created the app after the `Gadget` instance. If that is not the case, just go back to the app, and the token will transparently propagate.
+
+Now we are ready to start the simulated device in another console. Note that the name of the device should be `device1`.
+
+```shell
+cafjs device -d foo-device1
+```
+
+The first thing the new device does is to download from its `Gadget` instance a Docker image spec for the current app. Building this ARM image takes about a minute in my laptop, but images are cached in the host, and only rebuild when the spec changes. Then, it starts the app in a container.
+
+Since we started the app with `-d` (debug mode), you should see the debug logs in the console. If you go back to the instance of `myapp`, and click `Do it!`, you should see in the log `setPin` set to `true`, and about a second later, `setPin` set to `false`. That's our blink.
+
+Debug mode also opens port `9230` for attaching the Chrome browser developer tools. The catch is that the source path inside the container is `/usr/src/app/lib`, different from the host path. To set breakpoints, use this path when loading files.
+
+With three instances of the developer tools we can set breakpoints in the front end, the simulated cloud (port `9229`), and the simulated device (port `9230`).
+
+What has changed inside the box?
+
+We have a new directory `iot` with code that runs in the device. Two important files inside `iot/lib`:
+
+* `iot++.json` Describes changes to the baseline IoT device configuration in <Link to="../../apis/#caf_iot">iot.json</Link>.
+* `iot_methods.js` Your code.
+
+Section <Link to="#iot-device">IoT Device</Link> covers `iot_methods.js`.
+
+In `lib/*.json` we have added a new <Link to="../../apis/#caf_iot">IoT</Link> plugin. Also, `ca_methods.js` has new methods called by the device, and `hello()` propagates the authentication token to the `Gadget` app.
+
+</DocsSection>
+
+<DocsSection id="raspberry-pi">
+
+## Add a Raspberry Pi
+
+#### Requirements
+
+Raspberry Pi 3/4 with a modern (2020 or later) Raspberry Pi OS.
+
+Install in the RPi both *Docker* and the *Caf.js* management daemon, as described in <Link to="../../apis/#caf_rpi">here</Link>.
+
+For this discussion we assume *Caf.js Cloud* hosting. It is also possible to integrate an RPi with a local deployment by using the laptop external IP address, and not the local loop address. See <Link to="#tools">Tools</Link> for details.
+
+#### IoT Device App
+
+Deploy the previous `myapp` in the Cloud. See <Link to="#cafjs-cloud"> Caf.js Cloud</Link>.
+
+When the name of the device is, for example, `antonio-device1`, both the `Gadget` and `myapp` instance names should be `device1`.
+
+After that, the experience should be similar to the simulated case. But instead of printing log messages, the GPIO pin in the RPi should turn on and off, blinking a light, or making a sound, based on what is connected to the GPIO pins.
+
+
+</DocsSection>
+
+<DocsSection id="three-way-isomorphic">
+
+## Three-way Isomorphic
+
+We discussed the benefits of a three-way isomorphic framework <Link to="/permanent#three-way">here</Link>.
+
+
+#### Requirements
+
+We tested this app with a [Puck.js](https://www.puck-js.com/), a programmable Bluetooth beacon. This beacon is very easy to program using JavaScript, and we can add GATT services and advertisements with a few lines of code. See [HelloPuck](https://github.com/cafjs/caf_hellopuckjs.git) for details.
+
+If you do not have a `Puck.js`, you should be able to easily adapt this example to other Bluetooth devices. Configure GATT services and characteristics in `lib/ca++.json`. Change payload types in `iot/lib/iot_methods.js`.
+
+The Web Bluetooth API is supported by the *Chrome* browser in both Android and desktop platforms. *Firefox* or *Safari* will not work. For *Apple iOS* we have sucessfully run simple examples with the [WebBLE](https://apps.apple.com/us/app/webble/id1193531073) browser, but some code changes are needed. [Bluefy](https://apps.apple.com/us/app/bluefy-web-ble-browser/id1492822055) is another *Apple iOS* browser option.
+
+#### Bluetooth App
+
+Let's build a three-way isomorphic Bluetooth app with *Caf.js*.
+
+```shell
+cd playground; rm -fr app;  cafjs generate myapp iotbrowser ./app
+```
+
+and then install, build, and run.
+
+```shell
+cd app; cafjs install; cafjs build;  cafjs run -d myapp
+```
+
+With *Chrome*, login and create an instance of `myapp` with publisher `root`, app name `myapp`, and instance name `puck1`.
+
+Switch the `Browser Daemon` option to `on`. It will create a tab with a new hostname `http://root-myapp.localhost:3003/`. Chrome allows subdomains for `localhost`, and port `3003` provides direct access to `myapp`. The Web Bluetooth API requires `https` or `localhost`. It is also blocked inside a cross-origin iframe. By spawning the iframe into its own page, with a new hostname, we avoid these limitations.
+
+Click `Find`, then `Click to Pair`, select the compatible device, and then confirm. After that, blink the `Puck.js` light, or click the physical `Puck.js` button to start receiving notification from the beacon. Sharing a URL allows someone remote to interact with the beacon, see <Link to="/permanent">Permanent Presence</Link>.
+
+The simulated device runs inside the iframe `index-iot.html`, with the same origin as the top context. Using the *Chrome* developer tools we can debug device code by targeting this iframe.
+
+What about isomorphic?
+
+We can deploy this app unchanged on a Raspberry Pi, see the previous <Link to="#raspberry-pi">section</Link>. Keep the `Browser Daemon` option to `off`. The user interface simplifies, with fewer clicks, but the overall functionality is similar.
+
+Note that you should use a different instance name, matching the Raspberry Pi name, for example, `rpi1` instead of `puck1`. Never reuse an instance name for both browser and RPi.
+
+And this application also executes device code in the Cloud, introspecting device methods in the <Link to="../../apis/#caf_iot">IoT plugin</Link>.
+
+Some important code changes:
+
+* Modify the build system in `bin/build.sh` to `browserify` device code.
+* Introduce `iot/lib/main-shim.js` as the new entry point for the device in the browser.
+* Spawn a page that executes device code in an iframe (`public/js/components/Finder.js`).
+* Add a <Link to="../../apis/#caf_iot_gatt">Bluetooth plugin</Link> in `iot/lib/iot++.json`.
+* Add a React app for remote interaction in `public/user`.
 
 </DocsSection>
 

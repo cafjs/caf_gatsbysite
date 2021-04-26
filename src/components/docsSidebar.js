@@ -55,18 +55,7 @@ const DocsSidebar = () => {
           <div id="docs-sidebar" className={classSidebar}>
             <Nav id="docs-nav" className="docs-nav navbar" onSelect={handleSelect}>
               <ul className="section-items list-unstyled nav flex-column pb-3">
-	        <Nav.Item className="section-title">
-                  <Nav.Link className="scrollto" href="#getting-started"><FontAwesomeIcon className="fa-fw" icon={faArrowCircleUp}/> Getting Started</Nav.Link>
-                </Nav.Item>
-                <Nav.Item><Nav.Link className="scrollto" href="#install">Install</Nav.Link></Nav.Item>
-	        <Nav.Item><Nav.Link className="scrollto" href="#headless-example">First App</Nav.Link></Nav.Item>
-            <Nav.Item><Nav.Link className="scrollto" href="#add-react-frontend">React UI</Nav.Link></Nav.Item>
-            <Nav.Item><Nav.Link className="scrollto" href="#cafjs-cloud">Caf.js Cloud</Nav.Link></Nav.Item>
-            <Nav.Item><Nav.Link className="scrollto" href="#add-device">Simulated Device</Nav.Link></Nav.Item>
-            <Nav.Item><Nav.Link className="scrollto" href="#raspberry-pi">Raspberry Pi</Nav.Link></Nav.Item>
-                <Nav.Item><Nav.Link className="scrollto" href="#three-way-isomorphic">Three-Way Iso</Nav.Link></Nav.Item>
-
-                <Nav.Item className="nav-item section-title mt-3">
+                <Nav.Item className="section-title">
                   <Nav.Link className="scrollto" href="#concepts"><FontAwesomeIcon className="fa-fw" icon={faLightbulb}/> Concepts</Nav.Link>
                 </Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#components">Components</Nav.Link></Nav.Item>
@@ -77,6 +66,17 @@ const DocsSidebar = () => {
                 <Nav.Item><Nav.Link className="scrollto" href="#sharedmap">SharedMap</Nav.Link></Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#publish-subscribe">Publish Subscribe</Nav.Link></Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#iot-device">IoT Device</Nav.Link></Nav.Item>
+
+                <Nav.Item className="nav-item section-title mt-3">
+                  <Nav.Link className="scrollto" href="#getting-started"><FontAwesomeIcon className="fa-fw" icon={faArrowCircleUp}/> Getting Started</Nav.Link>
+                </Nav.Item>
+                <Nav.Item><Nav.Link className="scrollto" href="#install">Install</Nav.Link></Nav.Item>
+	        <Nav.Item><Nav.Link className="scrollto" href="#headless-example">First App</Nav.Link></Nav.Item>
+                <Nav.Item><Nav.Link className="scrollto" href="#add-react-frontend">React UI</Nav.Link></Nav.Item>
+                <Nav.Item><Nav.Link className="scrollto" href="#cafjs-cloud">Caf.js Cloud</Nav.Link></Nav.Item>
+                <Nav.Item><Nav.Link className="scrollto" href="#add-device">Simulated Device</Nav.Link></Nav.Item>
+                <Nav.Item><Nav.Link className="scrollto" href="#raspberry-pi">Raspberry Pi</Nav.Link></Nav.Item>
+                <Nav.Item><Nav.Link className="scrollto" href="#three-way-isomorphic">Three-Way Iso</Nav.Link></Nav.Item>
 
                 <Nav.Item className="nav-item section-title mt-3">
                   <Nav.Link className="scrollto" href="../../apis"><FontAwesomeIcon className="fa-fw" icon={faCog}/> APIs</Nav.Link>
@@ -90,7 +90,7 @@ const DocsSidebar = () => {
                   <Nav.Link className="scrollto" href="#resources"><FontAwesomeIcon className="fa-fw" icon={faBook}/> Resources</Nav.Link>
                 </Nav.Item>
               </ul>
-	      </Nav>
+	    </Nav>
           </div>
         </>
     );
