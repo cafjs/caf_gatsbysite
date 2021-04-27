@@ -1796,19 +1796,19 @@ For external IP addresses, `cafjs run` internally uses the `xip.io` service, whi
 
 Assuming that this address is your laptop external IP address, `192.168.1.15.xip.io` is your new wildcard domain. The option `--port 8080` sets your external port to `8080`. And then, the login url becomes `http://root-launcher.192.168.1.15.xip.io:8080`.
 
-Start your application with:
+Start your application
 
 ```shell
 cafjs run --ipAddress 192.168.1.15 --port 8080 myapp
 ```
 
-and the simulated device in another host:
+and, in another host, the simulated device
 
 ```shell
 cafjs device -d --ipAddress 192.168.1.15 --port 8080 --password bar foo-device1
 ```
 
-To use a real Raspberry Pi we adapt the startup script in [setup.sh](https://raw.githubusercontent.com/cafjs/caf_rpi/master/setup.sh), to first obtain a token from the local service (assume device id is `foo-device1`, password `bar`, and using the root account in the RPi)
+To use a real Raspberry Pi we adapt the startup script in [setup.sh](https://raw.githubusercontent.com/cafjs/caf_rpi/master/setup.sh), to first obtain a token from the local service. Assuming device id is `foo-device1`, password `bar`, and using the root account in the RPi:
 
 ```shell
 mkdir -p /config2; cd /config2
@@ -1823,9 +1823,35 @@ and then start the daemon with the new suffix, port, and protocol.
 docker run -d --name=root-rpidaemon2 --restart=always -e IS_REGISTRY_PRIVATE=false -e APP_SUFFIX=192.168.1.15.xip.io:8080 -e MY_ID=foo-device1 -v /var/run/docker.sock:/var/run/docker.sock  -v /config2:/config -e APP_PROTOCOL=http   -e CONFIG_VOLUME=/config2 gcr.io/cafjs-k8/root-rpidaemon
 ```
 
+`xip.io` can be temperamental. An equivalent service, `nip.io`, could also be used by setting the property `XIP_SUFFIX` to `nip.io`, i.e., `export XIP_SUFFIX=nip.io; cafjs run ...`, and replacing the `xip.io` suffix by `nip.io` in the scripts.
+
 What about `https`? In most cases you don't need it for development. For example, to enable WebXR APIs that need `localhost` or `https`, we use instead the Chrome developer tools, which provide local port forwarding, and then connect to the laptop USB port the Oculus headset, or Android phone, in debug mode. And now we can use a wildcard domain based on localhost, as shown in <Link to="#three-way-isomorphic"> Three-way Isomorphic</Link>.
 
 But if you really want `https`, you need a wildcard certificate, or a service like [ngrok](https://ngrok.com), and configure the `APP_SUFFIX` property with your new wildcard domain.
+
+#### Custom templates for 'cafjs generate'
+
+The repository [caf_template](https://github.com/cafjs/caf_template.git) contains the default template for `cafjs generate`.
+
+A template is a Docker image that contains mostly data. The Docker entrypoint is the top level script `copyAll.sh`. Just copy this file into your image. The subdirectories in `templates` define the target names for `generate`. Mustache template files have the extension `.mustache`.
+
+To use a different template:
+
+```shell
+cafjs generate --templateImage gcr.io/your_image myapp
+```
+
+and to refresh the template before using it
+
+```shell
+cafjs generate --update --templateImage gcr.io/your_image myapp
+```
+
+or just
+
+```shell
+docker pull  gcr.io/your_image
+```
 
 </DocsSection>
 
@@ -1833,6 +1859,11 @@ But if you really want `https`, you need a wildcard certificate, or a service li
 <DocsArticle id="resources">
 
 # Resources
+
+
+There are many small examples in the main *Caf.js* packages. Look under `./examples`. They run without a container, with security off, and they are a simple way to get started.
+
+There are also sixteen example apps in the top `Caf.js` repo, under `./apps`. Some are better written than others, but together they give you a good overview of what the framework can do. Most of them are already deployed in the *Caf.js Cloud*.
 
 </DocsArticle>
 
