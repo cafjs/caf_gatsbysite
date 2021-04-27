@@ -1,7 +1,10 @@
 import React from 'react';
-import { useStaticQuery, graphql } from 'gatsby';
+import { useStaticQuery, graphql, Link } from 'gatsby';
+import { MDXProvider } from "@mdx-js/react";
 
 import Header from './header';
+
+const docsLayout = {Link};
 
 const LayoutMDX = ({ children, pageInfo }) => {
     const data = useStaticQuery(graphql`
@@ -15,15 +18,17 @@ const LayoutMDX = ({ children, pageInfo }) => {
     `);
 
     return (
-      <>
-        <Header siteTitle={data.site.siteMetadata.title}  isDocs={false} />
-        <main><div className="mdx-article docs-page">{children}</div></main>
-        <footer>
-          <div className='footer-bottom text-center py-5'>
-            <span>© Copyright {new Date().getFullYear()} Caf.js Labs LLC</span>
-          </div>
-        </footer>
-      </>
+        <>
+          <MDXProvider components={docsLayout}>
+            <Header siteTitle={data.site.siteMetadata.title}  isDocs={false} />
+            <main><div className="mdx-article docs-page">{children}</div></main>
+            <footer>
+              <div className='footer-bottom text-center py-5'>
+                <span>© Copyright {new Date().getFullYear()} Caf.js Labs LLC</span>
+              </div>
+            </footer>
+          </MDXProvider>
+        </>
     );
 };
 

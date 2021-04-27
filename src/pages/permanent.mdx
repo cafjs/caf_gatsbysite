@@ -4,16 +4,15 @@ title: Permanent Presence
 
 ## Permanent Presence
 
-![GATSBY_EMPTY_ALT](../images/florian-wehde-yNJ9unY2OnE-unsplash-crop.jpg)Modern browsers enable offline experiences for Progressive Web Apps (PWAs) with service workers.
+![GATSBY_EMPTY_ALT](../images/florian-wehde-yNJ9unY2OnE-unsplash-crop.jpg)Service workers enable offline experiences for Progressive Web Apps (PWAs) in modern browsers.
 
-But what about the rest of the world? Services, clients, or devices that need interaction? They all have to wait.
+But when your app, or your IoT devices, are offline, what happens with the rest of the world? Services, clients, and devices that need their interaction. They all have to wait.
 
-And connectivity is not always symmetric. Most IoT devices are not directly exposed to the Internet, otherwise they would be hacked in an hour.
-This makes remote interaction with devices even more difficult.
+And most IoT devices are not directly exposed to the Internet, otherwise they would be compromised in minutes. Connectivity is not always symmetric, making remote interaction even more difficult.
 
-**Caf.js** makes devices and web app instances accessible from anywhere at any time. An abstraction that we call **Reverse Service Worker (RSW)** keeps them safe. A **three-way isomorphic** framework enables quick prototyping of new sharing experiences.
+With *Caf.js*, devices and web app instances are accessible at any time, from anywhere. Reverse Service Workers (RSWs) keep these interactions safe. A three-way isomorphic framework enables quick prototyping of new sharing experiences.
 
-Let's look at a few use cases first, and then describe the technology.
+Let's look at use cases first, and then describe the technology.
 
 <hr/>
 
@@ -23,27 +22,27 @@ So many Bluetooth devices around us. An indoor exercise bike, a heart rate/ECG m
 
 What if you could instantly share them across the Internet? With your doctor, your fitness instructor, your friend in a Zoom session, your colleagues working from home, a remote expert...
 
-And do that safely, with no setup, with just a browser. E-mail or text a URL to your peer, and when they click on the link they control the device. But only until you revoke access, or the embedded token expires.
+And do that safely, with no complex setup, with just a browser. E-mail or text a URL to your peer, and with a click on the link they control the device. And you can revoke access at any time, or let the link expire.
 
-With **Caf.js** you can do that with a few hundred lines of JavaScript. There are some examples in GitHub already. [HealthyPi](https://github.com/cafjs/caf_healthypi.git), a cheap ECG/Body temperature/SPO2 monitor.  [Puck.js](https://github.com/cafjs/caf_hellopuckjs.git), a programmable beacon with many sensors. And it is easy to build your own with our app template generator tool, i.e., `cafjs generate yourapp iotbrowser`.
+With *Caf.js* you can do that with a few hundred lines of JavaScript. Some examples in GitHub: [HealthyPi](https://github.com/cafjs/caf_healthypi.git), a cheap ECG/Body temperature/SPO2 monitor. [Puck.js](https://github.com/cafjs/caf_hellopuckjs.git), a programmable beacon with many sensors. And it is easy to build your own with our app generator <Link to="/docs/documentation#three-way-isomorphic">tool</Link>.
 
-#### Integration of real devices in VR/AR
+#### Integration of physical devices in VR/AR
 
-When your real home is part of a virtual world, and action in VR could switch off the lights of your real home, thousands of miles away.
+When your real home is embedded in a virtual world, an action in VR could switch off the lights of your home, thousands of miles away.
 
-You could implement this today, by creating an avatar of the lamp, which forwards actions to the physical lamp across the Internet.
+You can implement this today. Design an avatar for your lamp, and make it forward actions to your home across the Internet.
 
-But this is hard to get right. Any delays or connectivity issues will ruin the virtual experience. And directly exposing your lamp to the Internet is risky.
+But this is hard to get right. Any visible delays, or connectivity issues, will ruin the virtual experience. And directly exposing your lamp to the Internet is risky.
 
-Instead, **Caf.js** can take care of the backend for your lamp avatar, ensuring safety and predictable latency. And then you can focus on making the avatar more realistic.
+Instead, *Caf.js* can take care of the backend for your lamp avatar, ensuring safety and predictable latency. And then you can focus on making the avatar more realistic.
 
-What about AR? You are likely to share the room with the physical lamp. And when you look fixedly at it, a user interface will pop up allowing, for example, a change in the color hue.
+What about AR? In AR you are likely to share the room with the physical lamp. And when you look fixedly at it, a user interface will pop up to, for example, change its color hue.
 
-The connectivity challenges with AR are not any easier. What if the lamp is in a vacation rental, or in a shop, or at the office? It would be much easier if the AR client device just needed Internet connectivity, and the access policy was centrally managed for all the shared devices, as we do in **Caf.js**.
+The connectivity challenges with AR are not any easier. What if the lamp is in a vacation rental, or in a shop, or at the office? It would be much easier if the AR client device just needed Internet connectivity, and the access policy was centrally managed. This is what *Caf.js* enables.
 
-But the real fun starts with some remote team members in VR, and others local in AR. And they all collaborate in real-time by interacting with shared physical devices. With **Caf.js** all these user interfaces, and the state of the connected physical devices, are always in sync.
+But the real fun starts with some remote team members in VR, and others local in AR. And they all collaborate in real-time by interacting with shared physical devices. With *Caf.js* all these user interfaces, and the state of the connected physical devices, are always in sync.
 
-For example, an interior designer can configure the lights at your home remotely using VR, and as you see the changes in the real world, you can also suggest modifications in real-time with your AR interface.
+For example, a remote interior designer can configure the lights at your home using VR. As you see changes in the physical world, you can also make modifications with an AR interface. And your suggestions are immediately visible to the designer in VR.
 
 A bare bones example to do just that is in GitHub. [Hue](https://github.com/cafjs/caf_hellohue.git) controls a color smart bulb using three interfaces VR, AR, and html, keeping all of them in sync, and in sync with reality.
 
