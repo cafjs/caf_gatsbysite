@@ -93,7 +93,7 @@ Application code is not allowed to navigate the internal hierarchy. Instead, sec
 }
 ```
 
-The JSON file above, `components.json`,  describes a parent component `top` with two children components `log` and `foo`. Since `foo` is created after sibling `log`, it can safely find the logger with `this.$.log`.
+The JSON file above, `components.json`,  describes a parent component `top` with two child components `log` and `foo`. Since `foo` is created after sibling `log`, it can safely find the logger with `this.$.log`.
 
 The attribute `module` identifies the factory method that instantiates the component. For example, for `caf_components#supervisor` the factory method will be found with `module.require("caf_components").supervisor`.
 
@@ -220,7 +220,7 @@ A CA keeps internal state in two properties:
 Think of a CA as a sealed object.  Never add state outside these two properties.
 
 Access plugins with `this.$`. For example, `this.$.log` returns a proxy to the logger service, and `this.$.log.debug()` adds a debug message to the log.
- To configure plugins *Caf.js* uses JSON descriptions, as we discussed in the <Link to="#headless-example">Introduction</Link>.
+ To configure plugins *Caf.js* uses JSON descriptions, as discussed in <Link to="#headless-example">First App</Link>.
 
 #### Request Serialization
 
@@ -251,7 +251,7 @@ Serialization does not reduce performance. There could be thousands of CAs in a 
 
 And serialization in *Caf.js* is a **cluster-wide** property. Servers can fail, with hundreds of processes spread across many servers running your app, but CA requests will always be processed one after another.
 
-What is the Big Deal?
+What is the benefit of serialization?
 
 Serialization enables a **much simpler** programming abstraction.
 
@@ -471,9 +471,9 @@ A persistent session can guarantee that an stateless client recovers gracefully 
 
 ## Client Library
 
-The *Caf.js*  <Link to="../../apis/#caf_cli">Client Library</Link> is a tiny library that just needs web socket support. It works in the browser, in the Cloud, with your scripts, and with embedded devices. Currently JavaScript-only, but more languages will be added soon.
+The *Caf.js*  <Link to="../../apis/#caf_cli">client library</Link> is a tiny library that just needs web socket support. It works in the browser, in the Cloud, with your scripts, and with embedded devices. Currently JavaScript-only, but more languages will be added soon.
 
-The goal of this library is to create an authenticated session with a CA, and then provide a request-response model, and a notification model, using a common abstraction.
+The goal of this library is to create an authenticated session with a CA, and then provide both a request-response and a notification model, using a common abstraction.
 
 #### Authentication
 
@@ -481,7 +481,7 @@ JSON Web Tokens (JWTs) embedded in URLs is the main mechanism for client authent
 
 Tokens form a semi-lattice, making it easier to weaken them on-demand. By scoping a token to a particular app, owner, or CA name, we eliminate man-in-the-middle attacks, and reduce the damage of a compromised token.
 
-The [Launcher](https://github.com/cafjs/caf_launcher.git) app manages your tokens in the background, renewing and weakening them as needed. It provides Single Sign-On (SSO) for all your CAs. Before redirecting to another app, it just adds the correct token to the URL.
+The [Launcher](https://github.com/cafjs/caf_launcher.git) app manages your tokens in the background, with CAs, renewing and weakening them as needed. It provides Single Sign-On (SSO) for all your CAs. Before redirecting to another app, it just adds the correct token to the URL.
 
 This means that the client library has very little work to do. In most cases, it just extracts the token from a fragment in the URL, and sends it to the CA for validation using TLS.
 
@@ -572,7 +572,7 @@ s.onclose = function(err) {
 
 Let's add notifications to our previous example. A couple of changes:
 
-* Provide a session name in the URL. We use the name `admin` to match the queue name in the previous CA example.
+* Provide a session name in the URL. We use the name `admin` to match the queue name in the previous CA example. If missing, the default session name is `default`.
 * Create an `onmessage` handler that will receive each notification.
 
 Using `getMethodArgs()` we can extract the counter value from the notification.
