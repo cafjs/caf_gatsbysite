@@ -5,7 +5,8 @@ import { Container } from 'react-bootstrap';
 import Logo from '../svgs/logosquare.svg';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-    faGithub
+    faGithub,
+    faTwitter
 } from '@fortawesome/free-brands-svg-icons';
 
 const Header = ({ siteTitle , isDocs}) => {
@@ -31,6 +32,7 @@ const Header = ({ siteTitle , isDocs}) => {
               <div className="docs-top-utilities d-flex justify-content-end align-items-center">
 
 	        <ul className="social-list list-inline  mx-3 mx-md-5 mx-lg-5 mb-0  d-flex">
+                  <li className="list-inline-item"><a href="https://twitter.com/cafjs"> <FontAwesomeIcon className="fa-fw" icon={faTwitter}  /></a></li>
 	          <li className="list-inline-item"><a href="https://github.com/cafjs/caf"> <FontAwesomeIcon className="fa-fw" icon={faGithub}  /></a></li>
 	        </ul>
 	        <Link to="/docs/documentation" className="btn btn-primary d-flex">Docs</Link>

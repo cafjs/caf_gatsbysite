@@ -880,10 +880,10 @@ And a transactional plugin makes updates atomic, and externally consistent. For 
     },
 ```
 
-the value of `counter2` will **always** be seen by readers as one more than the value of `counter`. And if a client receives the notification, it means that there is a checkpoint of a *SharedMap* capturing the new update. Note that this does not mean that replicas received the update, but they will eventually receive it...
+the value of `counter2` will **always** be seen by readers as one more than the value of `counter`. And if a client receives the notification, it means that there is a checkpoint of a *SharedMap* capturing the new update. Note that this does not mean that replicas received the update, but they will eventually get it...
 
 
-Another important advantage of *SharedMaps* is **silent updates**. When the `counter` increments, readers do **not** process a request to update their state, and instead, the update just changes shared memory. One memory update shared by thousands of CAs in the same process. That's so much faster than individual requests!
+Another important advantage of *SharedMaps* is **silent updates**. When the `counter` increments, readers do **not** process a request to update their state, and instead, the update just changes shared memory. One memory update shared by thousands of CAs in the same process. That's so much faster than separate requests!
 
 
 #### Updating Code
@@ -894,7 +894,7 @@ There are serious security implications of using `eval` to instantiate these met
 
 Never execute untrusted code. *Caf.js* is **not** designed to protect your app from it. But the enforcement of the single-writer policy, together with the naming convention, authenticates the origin of a *SharedMap* custom method.
 
-A *SharedMap* can be replicated in an IoT device, or in the browser. This makes serialized methods a convenient way to dynamically update code everywhere. For example, end users can safely upload their own code to your app in the Cloud, and then execute it only in their own Raspberry Pi, without compromising multi-tenancy in your application. See [HelloDynamic](https://github.com/cafjs/caf_hellodynamic.git) for an example of programmable gesture detection.
+A *SharedMap* can be replicated in an IoT device, or in the browser. This makes serialized methods a convenient way to quickly update code everywhere. For example, end users can safely upload their own code to your app in the Cloud, and then execute it only in their own Raspberry Pi, without compromising multi-tenancy in your application. See [HelloDynamic](https://github.com/cafjs/caf_hellodynamic.git) for an example of programmable gesture detection.
 
 Transactional updates guarantee that changes to both data and code are always in sync. For example, you can create getters and setters that understand the internal schema of your *SharedMap*, and, whenever the schema changes, your helper methods will change too, matching the new schema. Never worry about data versioning again!
 
@@ -1017,11 +1017,11 @@ The platform running your IoT device code is a simplified version of the one tha
 
 There is at most **one** *CA Lite* instance per *Caf.js Lite* platform. The long term state of this instance is managed by a *Companion CA* in the Cloud.
 
-*Caf.js Lite* does not checkpoint. A device restart resets the *CA Lite* state, and then, it contacts its *Companion CA* for instructions and data.
+*Caf.js Lite* does not checkpoint. When a device restarts, it first resets the *CA Lite* state, and then, it contacts its *Companion CA* for instructions and data.
 
 Without local long term state, consistency is less of a concern. And some plugins are not transactional, interacting directly with the device to improve latency.
 
-We kept some *CA* features. Method execution serialized by a queue. An error rollbacks changes to `this.state`. Hierarchies of components configured with JSON descriptions. Plugins accessed with `this.$`. Support for *SharedMaps*...
+We kept some *CA* features. Method execution serialized by a queue. An error rollbacks the changes to `this.state`. Hierarchies of components configured with JSON descriptions. Plugins accessed with `this.$`. Support for *SharedMaps*...
 
 In *Caf.js Lite*, configuration is simpler. There is only one JSON file, `iot.json`, which merges the functionality of `framework.json` and `ca.json`.
 
@@ -1502,7 +1502,7 @@ cd util; ./client.js --url http://root-myapp.vcap.me bar foo-ca1
 
 What is in the box?
 
-We will use this example to introduce *Caf.js* programming in the <Link to="#concepts">next</Link> section. Let's look at the files in the `lib` directory first:
+Let's look at the files in the `lib` directory:
 
 * `rsa_pub.pem` A dummy public key to validate authentication tokens in a local deployment. When you deploy your app in the *Caf.js Cloud*, we swap this key by the "real" one.
 * `framework++.json` Describes changes to the baseline platform configuration in <Link to="../../apis/#caf_platform">framework.json</Link>.
@@ -1534,9 +1534,9 @@ The app uses <Link to="/autonomous">Proactive Server Side Rendering (PSSR)</Link
 
 The code in `public` is mostly a standard `React` app, which uses `redux` to manage state, and `react-bootstrap` components to build the UI.
 
-The only novelty is a session object to connect to a cloud assistant in `AppSession.js`, binding actions to remote methods in `AppActions.js`, and a custom initialization in `app.js`.
+The only novelties are a session object to connect to a cloud assistant in `AppSession.js`, binding actions to remote methods in `AppActions.js`, and a custom initialization in `app.js`.
 
-These are **not** hard dependencies. This is just an example integrating *Caf.js* with a front end, using libraries that we are familiar with. There are no *Caf.js* dependencies with `react-bootstrap`. Replacing `redux` by another state management solution just needs a simple integration with the client library, similar to `AppActions.js`. For PSSR, replacing `React` by another framework would require a new plugin though.
+These are **not** hard dependencies. This is just an example integrating *Caf.js* with a front end, using libraries that we are familiar with. There are no *Caf.js* dependencies with `react-bootstrap`. Replacing `redux` by another state management solution just needs a simple integration with the client library, similar to `AppActions.js`. For PSSR, replacing `React` by another framework would require a new plugin.
 
 
 </DocsSection>
@@ -1545,7 +1545,7 @@ These are **not** hard dependencies. This is just an example integrating *Caf.js
 
 ## Caf.js Cloud
 
-If you are self-hosting your apps, skip this section.
+If you are self-hosting your apps, you can skip this section.
 
 The *Caf.js Cloud* is currently in beta, and this section is likely to change.
 
@@ -1573,7 +1573,7 @@ Ensure that it runs fine before uploading
 cafjs run --appImage gcr.io/cafjs-k8/root-webexample myapp
 ```
 
-and then create local instances as before.
+and then create test local instances as before.
 
 Now we are ready to upload the image
 
@@ -1733,7 +1733,7 @@ Switch the `Browser Daemon` option to `on`. It will create a tab with a new host
 
 Click `Find`, then `Click to Pair`, select the compatible device, and then confirm. After that, blink the `Puck.js` light, or click the physical `Puck.js` button to start receiving notification from the beacon. Sharing a URL allows someone remote to interact with the beacon, see <Link to="/permanent">Permanent Presence</Link>.
 
-The simulated device runs inside the iframe `index-iot.html`, with the same origin as the top context. Using the *Chrome* developer tools we can debug device code by targeting this iframe.
+The bridging code runs inside the iframe `index-iot.html`, with the same origin as the top context. Using the *Chrome* developer tools we can debug device code by targeting this iframe.
 
 What about isomorphic?
 
