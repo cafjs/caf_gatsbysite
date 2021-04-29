@@ -1,7 +1,6 @@
 ---
 title: Reliable Service Orchestration
 ---
-import {Link} from 'gatsby'
 
 ## Reliable Service Orchestration
 
@@ -11,32 +10,30 @@ A stateful CA naturally implements a reliable orchestrator of interactions with 
 
 CAs are **transactional actors** that interact with the world using **transactional plugins**. We will explain what this means in a moment.
 
-But first let's look at a use case.
+But first, let's look at a use case.
 
 <hr/>
 
 ### JAMstack
 
-High performance front-ends are moving to a new architecture, exemplified by *JAMstack*:
-1. Create your website with a Static Site Generator (SSG), such as *Gatsby*.
+High performance front-ends are moving to a new architecture, exemplified by [JAMstack](https://jamstack.org):
+1. Create your website with a Static Site Generator (SSG), such as [Gatsby](https://www.gatsbyjs.com).
 2. Cache it everywhere using a CDN.
 3. Rely on APIs for external services and loading dynamic content.
 
-These sites are not always static. For example, *Gatsby* creates React components that will be hydrated when the page loads. And after that a *Gatsby* site becomes a web app.
-
 What is the weakness of this clean architecture? Too many external APIs. For sending an e-mail, loading dynamic content, paying a bill, authenticating a user, shipping something, storing user settings,... And they could come from different providers, requiring different API credentials.
 
-And where do all these credentials end up? In the browser. And with a new wave of security hardware bugs, there is no place to hide in the browser. Heroic attempts like *site isolation* are complex, inefficient, and not universally supported. These credentials are gone...
+And where do all these credentials end up? In the browser. And with a new wave of security hardware bugs, there is no place to hide in the browser. Heroic attempts to work around them, such as *site isolation*, are complex, inefficient, and not universally supported. These credentials are gone...
 
-And what if a sequence of API calls is needed to complete a task, and then the client crashes? You got the money, but did not follow up with the order. You ordered the goods, but never ship them. You sent that confirmation e-mail, but did nothing. And you have no record of what actually happened.
+And what if not one, but a sequence of API calls is needed to complete a task, and then the client crashes? You got the money, but did not follow up with the order. You ordered the goods, but never ship them. You sent that confirmation e-mail, but did nothing. And you have no record of what actually happened.
 
 And what about latency and atomicity of the dynamic content? The page starts with default values, and then it flips to actual ones. This is very visible because the static content loads so fast. And the dynamic content could be loaded from different sources, at different speeds, making the page inconsistent for a while, confusing your customer.
 
-How does **Caf.js** help JAMstack?
+How does *Caf.js* help JAMstack?
 
-A typical **Caf.js** application has a Cloud Assistant (CA) per customer and follows least privilege principles. A CA protects the API credentials, and its external methods limit what these credentials can do. For example, an API credential could allow sending an e-mail to anybody, but the CA will ensure that it is only sent to the support account.
+A typical *Caf.js* application has a Cloud Assistant (CA) per customer and follows least privilege principles. A CA protects the API credentials, and its external methods limit what these credentials can do. For example, an API credential could allow sending an e-mail to anybody, but the CA will ensure that it is only sent to the support account.
 
-How does the client invoke CA methods? A short-lived signed credential (JWT) provides temporary access to these methods. This credential will be exposed to the browser, and possibly compromised, but the damage is much less than exposing all your raw credentials.
+How does the client invoke CA methods? A short-lived signed credential (JWT) provides temporary access to these methods (<Link to="/docs/documentation#client">Client Library</Link>). This credential will be exposed to the browser, and possibly compromised, but the damage is much less than exposing all your raw credentials.
 
 A CA is a **smart card** for your API credentials.
 
@@ -46,25 +43,25 @@ A CA is a **reliable state machine** for your API calls.
 
 And dynamic content loading? An <Link to="/autonomous">autonomous</Link> CA periodically prefetches dynamic content from multiple sources, guaranteeing that a CA method call returns a consistent snapshot of this content. Loading could be even faster with proactive server side rendering, described in  <Link to="/autonomous">this</Link> section.
 
-A CA is a **caching reverse proxy** for dynamic content.
+A CA is a **reverse proxy**, caching **dynamic** content.
 
 See the [HelloPayPal](https://github.com/cafjs/caf_hellopaypal.git) app for an implementation of a reliable PayPal checkout based on these ideas.
 
 <hr/>
 
-How are these experiences implemented with **Caf.js**?
+How are these experiences implemented with *Caf.js*?
 
 ### Transactional Actors and Plugins
 
-The foundation of a Cloud Assistant (CA) is the Actor Model. An actor has a location-independent name, some private state, a queue to serialize the processing of requests, and the ability to asynchronously interact with other actors.
+The foundation of a <Link to="/docs/documentation#cloud-assistant">Cloud Assistant</Link> is the Actor Model. An actor has a location-independent name, some private state, a queue to serialize the processing of requests, and the ability to asynchronously interact with other actors.
 
 There is never more than one active CA with a given name, making serialization a **cluster-wide** property.
 
-CAs are **transactional actors**. Each request creates a transaction that modifies internal state when it commits, or rolls back changes when it returns an application error or throws an exception.
+CAs are **transactional actors**. Each request creates a transaction that modifies internal state when it commits, or rolls back changes when it returns an application error, or throws an exception.
 
 A CA checkpoints to a Redis instance **before** committing a transaction. It externalizes state changes **after** the transaction commits, i.e., after Redis makes the checkpoint stable. Therefore, it can recover from a failure and the world will never notice.
 
-How does **Caf.js** delay externalization? It uses **transactional plugins** to mediate external interactions. Invoking a plugin method just appends to a log the intent of performing an operation. If there are no errors, both the plugin logs and the state changes are checkpointed together. After the checkpoint finishes, the transaction is assumed to be committed, and then the "real" plugin methods are invoked, making the changes externally visible.
+How does *Caf.js* delay externalization? It uses **transactional plugins** to mediate external interactions. Invoking a plugin method just appends to a log the intent of performing an operation. If there are no errors, both the plugin logs and the state changes are checkpointed together. After the checkpoint finishes, the transaction is assumed to be committed, and then the "real" plugin methods are invoked, making the changes externally visible.
 
 What happens when there is a failure? There are two cases:
 
@@ -73,4 +70,4 @@ What happens when there is a failure? There are two cases:
 
 Recovery could perform the same operation multiple times. What if the operation is not idempotent? The transactional plugin **makes** it idempotent. For example, the plugin could log a unique id per operation, and use that id to query its status before retrying. Or just retry, when the operation is naturally idempotent.
 
-The beauty of **Caf.js** is that all this complexity is hidden in plugins, and application code just benefits from a more robust platform.
+The beauty of *Caf.js* is that all this complexity is hidden in plugins, and application code just benefits from a more robust platform.

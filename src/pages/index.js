@@ -28,7 +28,7 @@ const IndexPage = () => (
               <MyCard title="Orchestration" description="Simplify the integration of services with reliable sequencing, safe management of API credentials, and consistent caching of dynamic content." nextPage="/orchestration"><Gears className="py-0" width="40" height="40"/></MyCard>
             </Col>
             <Col md="12" lg="6" className="py-3">
-              <MyCard title="Collaborative" description="Start your app with collaborative multi-tenancy built-in. Mediate interactions between users with a <span class=&quot;font-weight-bold&quot;>Trusted Bus</span>, which handles access control. Scale with high-level communication services." nextPage="/collaborative"><Pipes width="45" height="35"/></MyCard>
+              <MyCard title="Collaborative" description="Start your app with collaborative multi-tenancy built-in. Mediate interactions with a <span class=&quot;font-weight-bold&quot;>Trusted Bus</span>, which handles authentication and access control. Scale with high-level communication services." nextPage="/collaborative"><Pipes width="45" height="35"/></MyCard>
             </Col>
           </Row>
         </div>

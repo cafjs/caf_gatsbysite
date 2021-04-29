@@ -1,9 +1,8 @@
 ---
-title: Collaborative Multi-tenancy
+title: Collaborative Multi-Tenancy
 ---
-import {Link} from 'gatsby'
 
-## Collaborative Multi-tenancy
+## Collaborative Multi-Tenancy
 
 ![GATSBY_EMPTY_ALT](../images/samuel-sianipar-scUBcasSvbE-unsplash.jpg)Multi-tenancy is kind of boring. Isolate your customers. Ensure a fair distribution of resources among them. Done.
 
@@ -11,11 +10,11 @@ But when we add the word **collaborative** everything changes. Bootstrap trust b
 
 How to bootstrap trust? Repeatability and control. With repeatability we can link interactions over time to build a reputation. With control we create a safe environment that encourages risk-taking.
 
-**Caf.js** provides repeatibility and control for your app with a **Trusted Bus**. A **Trusted Bus** mediates interactions between Cloud Assistants (CAs), authenticating requests, and enforcing your access control policy.
+*Caf.js* provides repeatibility and control for your app with a  <Link to="/docs/documentation#trusted-bus">Trusted Bus</Link>. A *Trusted Bus* mediates interactions between  <Link to="/docs/documentation#cloud-assistant">Cloud Assistants (CAs)</Link>, authenticating requests, and enforcing your access control policy.
 
-**Caf.js** implements high level communication services on top of the **Trusted Bus**. For example, to support a publish-subscribe model, or replicate data with Distributed Data Structures (DDS).
+*Caf.js* implements high level communication services on top of the *Trusted Bus*. For example, to support a <Link to="/docs/documentation#publish-subscribe">publish-subscribe</Link> model, or <Link to="/docs/documentation#sharedmap">replicate data</Link> with Distributed Data Structures (DDS).
 
-CAs access communication services with **transactional plugins**. They see replicated data as read-only, internal state. This leads to a simpler programming model, which recovers from failures transparently. See the <Link to="/orchestration">Service Orchestration</Link> section for details.
+CAs access communication services with *transactional plugins*. They see replicated data as read-only, internal state. This leads to a simpler programming model, which recovers from failures transparently. See the <Link to="/orchestration">Reliable Service Orchestration</Link> section for details.
 
 Let's describe a use case, and then we dig into the details.
 
@@ -23,11 +22,11 @@ Let's describe a use case, and then we dig into the details.
 
 #### Worldwide coordination of device actions
 
-*Warning: do not use **Caf.js** for safety critical applications.*
+*Warning: do not use *Caf.js* for safety critical applications.*
 
-Bring your own gadget. Register it with the app to create a **reverse service worker** (see the <Link to="/permanent">Permanent Presence</Link> section). Decide who can access it. Choose the tags your device subscribes to. Every time one of your friends posts an action using one of these tags your gadget will respond.
+Bring your own gadget. Register it with a *Caf.js* app to create a *reverse service worker* (see the <Link to="/permanent">Permanent Presence</Link> section). Decide who can access it. Choose the tags your device subscribes to. Every time one of your friends posts an action using one of these tags your gadget will respond.
 
-And here comes the fun part. Gadgets can start actions based on Coordinated Universal Time (UTC), not just when the action arrives. An action could also contain a sequence of sub-actions, spaced in time. And the **Caf.js** client library helps gadgets to synchronize clocks with the Cloud.
+And here comes the fun part. Gadgets can use <Link to="/docs/documentation#iot-device">Timed Bundles</Link> to start actions based on Coordinated Universal Time (UTC), not just when the action arrives. An action could also contain a sequence of commands, spaced in time. And the *Caf.js* <Link to="/docs/documentation#client">client library</Link> helps gadgets to synchronize clocks with the Cloud.
 
 This means that, given a second or two for propagation, we can **synchronize** actions, within a hundred milliseconds of each other, on **hundreds of thousands of devices across the world**. And soon it will be millions.
 
@@ -35,17 +34,17 @@ Your next Zoom party will never be the same.
 
 Moreover, not all posts are created by humans. See the <Link to="/autonomous">Autonomous Compute</Link> section to learn how to inject posts with continuous queries.
 
-And not all endpoints are gadgets. A **reverse service worker** can also represent other app instances or services. Coordination is not only for the physical world.
+And not all endpoints are gadgets. A *reverse service worker* can also represent other app instances or services. Coordination is not only for the physical world.
 
 The [TweetIoT](https://github.com/cafjs/caf_tweetiot.git) app puts all these ideas to practice. Hashtags in posts trigger gadget actions. Delegation simplifies access control policies based on groups.  The remarkable part is that the cloud backend is only **154 lines of JavaScript**.
 
 <hr/>
 
-How are these experiences implemented with **Caf.js**?
+How are these experiences implemented with *Caf.js*?
 
 #### Trusted Bus
 
-CAs authenticate requests before injecting them in the **Trusted Bus**. Since a CA name contains the name of the CA owner, the true owner of each request is always known.
+CAs authenticate requests before injecting them in the <Link to="/docs/documentation#trusted-bus">Trusted Bus</Link>. Since a CA name contains the name of the CA owner, the true owner of each request is always known.
 
 When a request reaches a bus endpoint, a check ensures that the request owner is allowed to invoke the request method. A request method can also change behavior depending on who calls it.
 
@@ -53,23 +52,23 @@ Decentralized authorization systems, such as SDSI, inspired our access control p
 
 Names can also refer to local names in other namespaces, delegating the task of maintaining group membership to other owners. These owners could further delegate to other owners. However, trust is not a transitive property, as Facebook users learnt in the hard way, and delegation chains tend to be short.
 
-CAs use **SharedMaps**, described next, to represent groups. Group updates propagate in milliseconds. The security library handles link traversal between **SharedMaps** to implement delegation.
+CAs use *SharedMaps*, described next, to represent groups. Group updates propagate in milliseconds. The security library handles link traversal between *SharedMaps* to implement delegation.
 
 #### SharedMap
 
-A **SharedMap** is a single writer-multiple reader DDS that can efficiently replicate data across many CAs. CAs see this data as internal state. The writer CA is the owner, providing a scoped name for the **SharedMap**.
+A <Link to="/docs/documentation#sharedmap">SharedMap</Link> is a single writer-multiple reader DDS that can efficiently replicate data across many CAs. CAs see this data as internal state. The writer CA is the owner, providing a scoped name for the *SharedMap*.
 
-CAs blend with **SharedMaps** in a novel way. Adding a **SharedMap** does not change the semantics of the Actor Model, and it can always be replaced by extra requests. This means that we never introduce deadlocks or data races. The application just scales better and with less memory.
+CAs blend with *SharedMaps* in a novel way. Adding a *SharedMap* does not change the semantics of the Actor Model, and it can always be replaced by extra requests. This means that we never introduce deadlocks or data races. The application just scales better and with less memory.
 
-**SharedMaps** can be replicated in the Cloud, in devices, or in the browser. They can also contain serialized methods. They are updated with a **transactional plugin**, ensuring that changes to both code and data are atomic, and only visible when they respect serialization.
+*SharedMaps* can be replicated in the Cloud, in devices, or in the browser. They can also contain serialized methods. They are updated with a *transactional plugin*, ensuring that changes to both code and data are atomic, and only visible when they respect serialization.
 
-A **SharedMap** provides a safe mechanism to dynamically update code and data everywhere.
+A *SharedMap* provides a safe mechanism to update code and data everywhere.
 
 #### Publish-Subscribe
 
-Our implementation supports two kinds of topics:
+Our <Link to="/docs/documentation#publish-subscribe">implementation</Link> supports two kinds of topics:
 
 1. **Private**: similar to a blog. There is only one CA that can publish messages, but anybody can subscribe to receive them.
-2. **Forum**: anybody can publish or subscribe, but subscribers can filter publishers by setting **Trusted Bus** policies.
+2. **Forum**: anybody can publish or subscribe, but subscribers can filter publishers by setting *Trusted Bus* policies.
 
-**SharedMap** and **Publish-Subscribe** complement each other well. The former provides cheap, silent updates to many CAs. The latter triggers an action on each subscribed CA, and this is more expensive, but needed for external interaction.
+*SharedMap* and *Publish-Subscribe* complement each other well. The former provides cheap, silent updates to many CAs. The latter triggers an action on each subscribed CA, and this is more expensive, but needed for external interaction.
