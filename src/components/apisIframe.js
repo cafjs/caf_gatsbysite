@@ -1,7 +1,7 @@
 import React, { useState, useEffect} from 'react';
 import { Row, Col} from "react-bootstrap"
 
-const URL_PREFIX = 'https://www.cafjs.com/api/';
+const URL_PREFIX = 'https://www.cafjslabs.com/api/';
 
 const DEFAULT_IFRAME_URL = URL_PREFIX + 'caf_components';
 
