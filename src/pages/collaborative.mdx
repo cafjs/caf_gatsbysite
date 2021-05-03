@@ -6,9 +6,9 @@ title: Collaborative Multi-Tenancy
 
 ![GATSBY_EMPTY_ALT](../images/samuel-sianipar-scUBcasSvbE-unsplash.jpg)Multi-tenancy is kind of boring. Isolate your customers. Ensure a fair distribution of resources among them. Done.
 
-But when we add the word **collaborative** everything changes. Bootstrap trust between strangers. Help them to communicate and share. The success of many apps depends on getting this right.
+But when we add the word **collaborative**, everything changes. Bootstrap trust between strangers. Help them to communicate and share. The success of many apps depends on getting this right.
 
-How to bootstrap trust? Repeatability and control. With repeatability we can link interactions over time to build a reputation. With control we create a safe environment that encourages risk-taking.
+How to bootstrap trust? Repeatability and control. With repeatability, we can link interactions over time to build a reputation. With control, we create a safe environment that encourages risk-taking.
 
 *Caf.js* provides repeatibility and control for your app with a  <Link to="/docs/documentation#trusted-bus">Trusted Bus</Link>. A *Trusted Bus* mediates interactions between  <Link to="/docs/documentation#cloud-assistant">Cloud Assistants (CAs)</Link>, authenticating requests, and enforcing your access control policy.
 
@@ -50,7 +50,7 @@ When a request reaches a bus endpoint, a check ensures that the request owner is
 
 Decentralized authorization systems, such as SDSI, inspired our access control policies. Each owner maintains a local namespace, mapping names to principals. When several principals have the same local name, they form a group. Policy associates methods with allowed principals, or groups of allowed principals.
 
-Names can also refer to local names in other namespaces, delegating the task of maintaining group membership to other owners. These owners could further delegate to other owners. However, trust is not a transitive property, as Facebook users learnt in the hard way, and delegation chains tend to be short.
+Names can also refer to local names in other namespaces, delegating the task of maintaining group membership to other owners. These owners could further delegate to other owners. However, trust is not a transitive property, as Facebook users learned the hard way, and delegation chains tend to be short.
 
 CAs use *SharedMaps*, described next, to represent groups. Group updates propagate in milliseconds. The security library handles link traversal between *SharedMaps* to implement delegation.
 

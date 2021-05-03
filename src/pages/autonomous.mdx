@@ -10,7 +10,7 @@ Many years later, and now we live in the land of milk and honey in terms of comp
 
 What else can we do with all that power?
 
-One obvious candidate is to enable web clients to launch long term activities in the Cloud, where long term could mean years. These activities are a good complement to a request-response model. For example, they could warn you, or take some action, if something critical to you has happened on the Web. And that would not be spam, after all you were the one setting up the continuous query.
+One obvious candidate is to enable web clients to launch long term activities in the Cloud, where long term could mean years. These activities complement a request-response model. For example, they could warn you, or take some action, if something critical to you has happened on the Web. And that would not be spam, after all you were the one setting up the continuous query.
 
 It is unreasonable to assume that anybody should be able to launch an **arbitrary** activity in any site. Someone has to pay for it. Denial of service becomes trivial. Running untrusted code is unsafe. We need a bit more structure to make it happen.
 
@@ -24,11 +24,11 @@ Let's look at a few use cases.
 
 Modern browsers throttle background tabs, making them unusable for running tasks. Service workers of web apps that are not explicitly installed (most of them) can be garbage collected at any time. AFAIK, without browser extensions, there are no reliable methods in the browser to keep background tasks active long term.
 
-And this is all for a good reason. The last thing you want is a website that you visited three months ago is still draining your phone battery.
+And this is all for a good reason. The last thing you want is a website you visited three months ago, is still draining your phone battery.
 
-But to recreate a more desktop-like experience in the browser we need reliable background tasks. If we cannot run them in the phone, can we do it in the Cloud?
+But to recreate a more desktop-like experience in the browser, we need reliable background tasks. If we cannot run them in the phone, can we do it in the Cloud?
 
-The critical part is the context switch between activities. We want to convince the user that background tasks are running in the phone, but they are not, they are running in the Cloud. When we swap a visible *iframe* of one activity by another one, we need to show progress, and the transition needs to be smooth.
+The critical part is the context switch between activities. We want to convince the user that background tasks are running in the phone, which they are not, they are running in the Cloud. When we swap a visible *iframe* of one activity by another one, we need to show progress, and the transition needs to be smooth.
 
 In *Caf.js*, cloud-based multi-tasking is implemented by some trickery in the [Launcher](https://github.com/cafjs/caf_launcher.git) app, and enabling **proactive server side rendering** in most of our apps. We will describe this technique in a moment.
 

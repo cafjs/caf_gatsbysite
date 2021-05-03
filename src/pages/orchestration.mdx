@@ -25,7 +25,7 @@ What is the weakness of this clean architecture? Too many external APIs. For sen
 
 And where do all these credentials end up? In the browser. And with a new wave of security hardware bugs, there is no place to hide in the browser. Heroic attempts to work around them, such as *site isolation*, are complex, inefficient, and not universally supported. These credentials are gone...
 
-And what if not one, but a sequence of API calls is needed to complete a task, and then the client crashes? You got the money, but did not follow up with the order. You ordered the goods, but never ship them. You sent that confirmation e-mail, but did nothing. And you have no record of what actually happened.
+And what if not one, but a sequence of API calls is needed to complete a task, and then the client crashes? You got the money, but did not follow up with the order. You ordered the goods, but never shipped them. You sent that confirmation e-mail, but did nothing. And you have no record of what actually happened.
 
 And what about latency and atomicity of the dynamic content? The page starts with default values, and then it flips to actual ones. This is very visible because the static content loads so fast. And the dynamic content could be loaded from different sources, at different speeds, making the page inconsistent for a while, confusing your customer.
 
@@ -37,7 +37,7 @@ How does the client invoke CA methods? A short-lived signed credential (JWT) pro
 
 A CA is a **smart card** for your API credentials.
 
-What about sequencing API calls? A CA could provide an external method to trigger the sequence, and then keep track of its progress with internal state. This CA will also retry an started sequence after a failure. Retrying is always safe, as we will explain next.
+What about sequencing API calls? A CA could provide an external method to trigger the sequence, and then keep track of its progress with internal state. This CA will also retry a started sequence after a failure. Retrying is always safe, as we will explain next.
 
 A CA is a **reliable state machine** for your API calls.
 

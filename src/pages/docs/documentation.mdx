@@ -167,6 +167,8 @@ or to insert a new component `bar` before `foo`
 
 Note the "touch" operation to indicate the insertion position in the array. Insertion of a component with a new key is right after the last array operation.
 
+When the first array operation inserts a component with a new key, it becomes the first element of the array.
+
 </DocsSection>
 
 
@@ -1270,7 +1272,7 @@ This notification is handled by the *CA Lite* by calling `greetings()`. This met
 
 *Warning: do not use **Caf.js** for safety critical applications.*
 
-*Caf.js IoT Device*  was originally created to control **drones** using the Cloud. It was fun, and we learnt a few things in the hard way:
+*Caf.js IoT Device*  was originally created to control **drones** using the Cloud. It was fun, and we learned a few things the hard way:
 
 * Losing connectivity, or an increase in latency, meant that a crash was likely.
 * Accurate coordination of more than a few drones was difficult.
@@ -1711,7 +1713,7 @@ We tested this app with a [Puck.js](https://www.puck-js.com/), a programmable Bl
 
 If you do not have a `Puck.js`, you should be able to easily adapt this example to other Bluetooth devices. Configure GATT services and characteristics in `lib/ca++.json`. Change payload types in `iot/lib/iot_methods.js`.
 
-The Web Bluetooth API is supported by the *Chrome* browser in both Android and desktop platforms. *Firefox* or *Safari* will not work. For *Apple iOS* we have sucessfully run simple examples with the [WebBLE](https://apps.apple.com/us/app/webble/id1193531073) browser, but some code changes are needed. [Bluefy](https://apps.apple.com/us/app/bluefy-web-ble-browser/id1492822055) is another *Apple iOS* browser option.
+The Web Bluetooth API is supported by the *Chrome* browser in both Android and desktop platforms. On a Linux desktop enable *Experimental Web Platform Features* with `chrome://flags`. *Firefox* or *Safari* will not work. For *Apple iOS* we have sucessfully run simple examples with the [WebBLE](https://apps.apple.com/us/app/webble/id1193531073) browser, but some code changes are needed. [Bluefy](https://apps.apple.com/us/app/bluefy-web-ble-browser/id1492822055) is another *Apple iOS* browser option.
 
 #### Bluetooth App
 
