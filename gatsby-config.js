@@ -13,7 +13,10 @@ module.exports = {
                 name: `Caf.js`,
                 short_name:`Caf.js`,
                 start_url: `/`,
+                background_color: `#f7f0eb`,
+                theme_color: `#a2466c`,
                 icon: `src/images/logosquare.svg`,
+                display: `standalone`,
                 cache_busting_mode: `none`
             }
         },
