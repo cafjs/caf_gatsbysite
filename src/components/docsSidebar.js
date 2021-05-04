@@ -56,7 +56,7 @@ const DocsSidebar = () => {
             <Nav id="docs-nav" className="docs-nav navbar" onSelect={handleSelect}>
               <ul className="section-items list-unstyled nav flex-column pb-3">
                 <Nav.Item className="section-title">
-                  <Nav.Link className="scrollto" href="#concepts"><FontAwesomeIcon className="fa-fw" icon={faLightbulb}/> Concepts</Nav.Link>
+                  <Nav.Link className="scrollto" href="#concepts"><FontAwesomeIcon className="fa-fw" icon={faLightbulb}/>Concepts</Nav.Link>
                 </Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#components">Components</Nav.Link></Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#cloud-assistant">Cloud Assistant</Nav.Link></Nav.Item>

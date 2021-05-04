@@ -8,6 +8,16 @@ module.exports = {
     plugins: [
         `gatsby-plugin-react-helmet`,
         {
+            resolve: `gatsby-plugin-manifest`,
+            options: {
+                name: `Caf.js`,
+                short_name:`Caf.js`,
+                start_url: `/`,
+                icon: `src/images/logosquare.svg`,
+                cache_busting_mode: `none`
+            }
+        },
+        {
             resolve: `gatsby-source-filesystem`,
             options: {
                 name: `images`,
