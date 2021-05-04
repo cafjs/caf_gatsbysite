@@ -59,7 +59,7 @@ module.exports = {
                             disableBgImage: true,
                             linkImagesToOriginal: false,
                             wrapperStyle: fluidResult => {
-                                return `width: 272px;`;
+                                return `width: 300px;`;
                             }
                         },
                     },
