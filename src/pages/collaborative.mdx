@@ -16,7 +16,7 @@ How to bootstrap trust? Repeatability and control. With repeatability, we can li
 
 CAs access communication services with *transactional plugins*. They see replicated data as read-only, internal state. This leads to a simpler programming model, which recovers from failures transparently. See the <Link to="/orchestration">Reliable Service Orchestration</Link> section for details.
 
-Let's describe a use case, and then we dig into the details.
+Let's describe two use cases, and then we dig into the details.
 
 <hr/>
 
@@ -30,13 +30,21 @@ And here comes the fun part. Gadgets can use <Link to="/docs/documentation#iot-d
 
 This means that, given a second or two for propagation, we can **synchronize** actions, within a hundred milliseconds of each other, on **hundreds of thousands of devices across the world**. And soon it will be millions.
 
-Your next Zoom party will never be the same.
-
 Moreover, not all posts are created by humans. See the <Link to="/autonomous">Autonomous Compute</Link> section to learn how to inject posts with continuous queries.
 
 And not all endpoints are gadgets. A *reverse service worker* can also represent other app instances or services. Coordination is not only for the physical world.
 
-The [TweetIoT](https://github.com/cafjs/caf_tweetiot.git) app puts all these ideas to practice. Hashtags in posts trigger gadget actions. Delegation simplifies access control policies based on groups.  The remarkable part is that the cloud backend is only **154 lines of JavaScript**.
+The [TweetIoT](https://github.com/cafjs/caf_tweetiot.git) ([watch video](https://youtu.be/TxEfYMWr8iM)) app puts all these ideas to practice. Hashtags in posts trigger gadget actions. Delegation simplifies access control policies based on groups.  The remarkable part is that the cloud backend is only **154 lines of JavaScript**.
+
+#### Implementing the WAB (Web App Background) Architecture
+
+The WAB Architecture creates collaborative apps in the browser with two independent layers. The top layer is transparent, and contains video/audio components (WebRTC). The background layer is a Web App, synchronized with Caf.js, and running everywhere. The merging of these layers is at the endpoints not at the source.
+
+This architecture has many advantages ([watch video](https://youtu.be/LJtyFKhVNiQ)), for example, personalizing content, or sharing local bluetooth devices with other participants in the call. And after sharing, device actions can be synchronized not only with global time, but also with the video stream.
+
+Your next Zoom party will never be the same.
+
+The [HelloWAB](https://github.com/cafjs/caf_hellowab.git) ([watch video](https://youtu.be/bHo7lmurc2A)) app implements the WAB architecture using [Daily video APIs](https://www.daily.co).
 
 <hr/>
 

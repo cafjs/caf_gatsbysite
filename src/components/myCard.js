@@ -6,7 +6,7 @@ import { Card } from 'react-bootstrap';
 
 
 
-const MyCard = ({children, title, description, nextPage}) => {
+const MyCard = ({children, title, description, linkDescription, nextPage}) => {
     return (
         <Card className="shadow-sm">
           <Card.Body>
@@ -14,7 +14,7 @@ const MyCard = ({children, title, description, nextPage}) => {
               <span className="theme-icon-holder card-icon-holder mr-2">{children}</span>
               <span className="card-title-text">{title}</span>
             </h5>
-            <Card.Text dangerouslySetInnerHTML={{__html: description + '<span class="fake-link"> Learn more → </span>'}}>
+            <Card.Text dangerouslySetInnerHTML={{__html: description + '<span class="fake-link"> ' + linkDescription + ' </span>'}}>
             </Card.Text>
             <Link to={nextPage} className="card-link-mask"></Link>
           </Card.Body>
@@ -24,6 +24,7 @@ const MyCard = ({children, title, description, nextPage}) => {
 
 MyCard.propTypes = {
     title: PropTypes.string,
+    linkDescription: PropTypes.string,
     description: PropTypes.string,
     nextPage:  PropTypes.string
 
