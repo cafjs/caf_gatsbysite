@@ -64,6 +64,7 @@ const APIsSidebar = () => {
                 <Nav.Item><Nav.Link className="scrollto" href="#caf_security">caf_security</Nav.Link></Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#caf_session">caf_session</Nav.Link></Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#caf_pubsub">caf_pubsub</Nav.Link></Nav.Item>
+                <Nav.Item><Nav.Link className="scrollto" href="#caf_fsm">caf_fsm</Nav.Link></Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#caf_iot">caf_iot</Nav.Link></Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#caf_platform">caf_platform</Nav.Link></Nav.Item>
                 <Nav.Item><Nav.Link className="scrollto" href="#caf_profiler">caf_profiler</Nav.Link></Nav.Item>
