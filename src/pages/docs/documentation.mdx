@@ -376,6 +376,41 @@ In the introduction to <Link to="../../autonomous">Autonomous Computation</Link>
 
 This section is all about implementing these ideas in your applications.
 
+#### Scheduled Methods
+
+The <Link to="../../apis/#caf_delay">delay plugin</Link> schedules a CA method to be invoked once, or multiple times, sometime in the future. The first invocation time can be relative to the current time, or absolute, using UTC time. Repetitions also specify an interval time in seconds and, optionally, a maximum number of invocations. We can also inspect, and cancel, pending invocations at any time.
+
+By regularly scheduling methods we make CAs autonomous. For example, let's keep calling `__ca_increment__()` every `interval` seconds until we cancel:
+
+```js
+exports.methods = {
+    ...
+    async scheduleRepeat(delay, delta, interval) {
+        const repeater = this.$.delay.newRepeater(interval);
+        const id = this.$.delay.scheduleWithOffset(
+            delay, '__ca_increment__', [delta], repeater, true
+        );
+        return [null, id];
+    },
+    async cancel(id) {
+        this.$.delay.cancel(id);
+        return this.getState();
+    },
+    async getPending() {
+        return [null, this.$.delay.getPending()];
+    }
+    async __ca_increment__(delta, id) {
+        this.$.log.debug(`inc delta:${delta} id:${id}`);
+        this.state.counter = this.state.counter + delta;
+        return [];
+    },
+```
+
+A shortcut to make your CA autonomous, is just to implement the `__ca_pulse__()` method, and then the runtime will call it periodically.
+
+How often? The default is every 2 seconds, but you can change that in `framework++.json`. Just modify the `interval` property of the `cron_pulser` component.
+
+
 #### Sessions
 
 When spawning a long term activity in the Cloud, it is crucial to manage notifications for offline clients. This means queueing them in the Cloud until clients are ready to read them. But it also means ensuring that *Caf.js* does not run out of memory with a leaky queue. And when the client is back online, low latency interaction is a must.
@@ -416,10 +451,6 @@ exports.methods = {
 };
 caf.init(module);
 ```
-
-To make your CA autonomous, implement the `__ca_pulse__()` method, and the runtime will call it periodically.
-
-How often? The default is every 2 seconds, but you can change that in `framework++.json`. Just modify the `interval` property of the `cron_pulser` component.
 
 In this case `__ca_pulse__()` increments a counter, and whenever the counter is a multiple of `divisor`, it sends a notification to a queue named `admin`. Note that `this.$.props.divisor` is a property configured in `ca++.json`.
 
