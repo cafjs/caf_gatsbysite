@@ -532,7 +532,7 @@ In the following examples the security plugin has been disabled.
 
 ```js {2,6}
 const caf_cli = require('caf_core').caf_cli;
-const URL = 'http://root-hello.vcap.me:3000/#from=foo-ca1&ca=foo-ca1';
+const URL = 'http://root-hello.localtest.me:3000/#from=foo-ca1&ca=foo-ca1';
 const s = new caf_cli.Session(URL);
 s.onopen = async function() {
     try {
@@ -578,7 +578,7 @@ What happens if we call multiple methods on the session without `await`? The ses
 const caf_cli = require('caf_core').caf_cli;
 const util = require('util');
 const setTimeoutPromise = util.promisify(setTimeout);
-const URL = 'http://root-hello.vcap.me:3000/#session=admin&from=foo-ca1&ca=foo-ca1';
+const URL = 'http://root-hello.localtest.me:3000/#session=admin&from=foo-ca1&ca=foo-ca1';
 const s = new caf_cli.Session(URL);
 s.onopen = async function() {
     try {
@@ -1479,7 +1479,7 @@ cd apps/caf_helloworld; cafjs build; cafjs run helloworld
 
 With `docker ps` you should see seven running containers. They simulate the support services that we run in the Cloud.
 
-The app launcher URL is http://root-launcher.vcap.me (DNS resolves `*.vcap.me` to `127.0.0.1`, the local loop). Using your browser, login with user `foo` and password `bar`. Then, with the top left menu, click the `+` icon to add a `helloworld` app instance.
+The app launcher URL is http://root-launcher.localtest.me (DNS resolves `*.localtest.me` to `127.0.0.1`, the local loop). Using your browser, login with user `foo` and password `bar`. Then, with the top left menu, click the `+` icon to add a `helloworld` app instance.
 
 Fill the form with:
 
@@ -1532,7 +1532,7 @@ This time we used the flag `-d` to turn on debugging mode. You should see debug 
 There is no front end, and we use a script in the `util` directory to read state, and subscribe to notifications.
 
 ```shell
-cd util; ./client.js --url http://root-myapp.vcap.me bar foo-ca1
+cd util; ./client.js --url http://root-myapp.localtest.me bar foo-ca1
 ```
 
 What is in the box?
@@ -1675,7 +1675,7 @@ and then install, build, and run.
 cd app; cafjs install; cafjs build;  cafjs run -d myapp
 ```
 
-The [Gadget](https://github.com/cafjs/caf_gadget.git) app manages IoT devices. Login with the local URL http://root-launcher.vcap.me and create a `Gadget` instance with publisher `root` and app name `gadget`. The instance name should match the name of the device, for example, `device1`.
+The [Gadget](https://github.com/cafjs/caf_gadget.git) app manages IoT devices. Login with the local URL http://root-launcher.localtest.me and create a `Gadget` instance with publisher `root` and app name `gadget`. The instance name should match the name of the device, for example, `device1`.
 
 Create an instance of `myapp` (publisher is always `root` in local deployment), ensure that the instance name matches the device name, i.e., `device1`.
 
@@ -1825,7 +1825,7 @@ Let's enumerate the most important subcommands, and link to usage examples in th
 
 To attach a real device to a local *Caf.js* deployment, the network interface that `cafjs run` uses has to change. By default, the Docker containers use local IP addresses, which are not accessible outside your laptop.
 
-Another difficulty is obtaining a wildcard domain for your external interface. In the default case, *Caf.js* uses `vcap.me`, which redirects `*.vcap.me` to the local IP address `127.0.0.1`.
+Another difficulty is obtaining a wildcard domain for your external interface. In the default case, *Caf.js* uses `localtest.me`, which redirects `*.localtest.me` to the local IP address `127.0.0.1`.
 
 For external IP addresses, `cafjs run` internally uses the `xip.io` service, which redirects `*.192.168.1.15.xip.io` to `192.168.1.15`.
 
